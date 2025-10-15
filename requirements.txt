@@ -1,0 +1,16 @@
+# Web框架
+fastapi
+uvicorn[standard]
+python-multipart
+
+# 模型推理
+ultralytics
+onnxruntime
+
+# 图像处理
+numpy
+opencv-python-headless  # 使用headless版本，无需GUI库
+Pillow
+
+# 负载测试 (可选, 用于测试阶段)
+locust
