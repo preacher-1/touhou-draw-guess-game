@@ -9,7 +9,7 @@ app = FastAPI(title="CampusVision AI Service")
 
 # --- 配置CORS中间件 ---
 # 允许所有来源，方便前端本地开发调试
-origins = ["*"] 
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

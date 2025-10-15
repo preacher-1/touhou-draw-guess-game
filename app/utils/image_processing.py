@@ -21,6 +21,7 @@ def load_class_names() -> List[str]:
 # --- 模型输出参数 (根据您的模型修正) ---
 CLASS_NAMES = load_class_names()
 
+
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     """
     对输入的图片字节流进行预处理以适应分类模型
@@ -38,11 +39,6 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     )
 
     # 4. 归一化 (0-255 -> 0.0-1.0)
-    # 注意：如果您的模型训练时用了特定的均值和标准差进行归一化(例如ImageNet)，
-    # 您需要在这里实现完全相同的归一化逻辑。
-    # mean = np.array([0.485, 0.456, 0.406])
-    # std = np.array([0.229, 0.224, 0.225])
-    # image_normalized = (resized_image.astype(np.float32) / 255.0 - mean) / std
     image_normalized = resized_image.astype(np.float32) / 255.0
 
     # 5. 转换维度 HWC -> CHW (Height, Width, Channel -> Channel, Height, Width)
