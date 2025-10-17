@@ -1,4 +1,4 @@
-# 环境配置与项目启动教程 (保姆级)
+# 环境配置与项目启动教程
 
 本教程将一步步指导你如何从零开始，在你的电脑上成功配置好开发环境并运行本项目。
 
@@ -7,15 +7,17 @@
 在开始之前，请确保你的电脑上已经安装了以下两个基础软件：
 
 1.  **Git**: 一个版本控制工具，用于下载和管理代码。
-    *   [点击这里下载 Git](https://git-scm.com/downloads)
+    *   下载链接：https://git-scm.com/downloads
     *   安装时一路点击“下一步”即可。安装完成后，在终端（或命令提示符）输入 `git --version`，如果能显示版本号，说明安装成功。
 
 2.  **Python**: 本项目的后端编程语言。
     *   **强烈建议安装 Python 3.10 或 3.11 版本**，以保证最好的兼容性。
-    *   [点击这里下载 Python](https://www.python.org/downloads/)
+    *   下载链接：https://www.python.org/downloads/
     *   **Windows 用户请注意**：在安装时，务必勾选 **"Add Python to PATH"** 选项！
     *   安装完成后，在终端输入 `python --version` 或 `python3 --version`，如果能显示版本号，说明安装成功。
 
+3. **VS Code**: 一个强大的代码编辑器，用于编写和调试代码。
+   
 ---
 
 ## 1. 获取项目代码
@@ -40,6 +42,18 @@ cd touhou-draw-guess-game
 > **什么是虚拟环境？**
 >
 > 想象一下，你为这个项目创建了一个专属的、干净的“Python 工具箱”（就是虚拟环境）。之后，我们所有需要的工具（依赖库）都只安装在这个箱子里，而不会弄乱你系统全局的工具箱。
+
+### 推荐：使用 VS Code 创建虚拟环境
+
+如果你使用的是 VS Code，你可以直接在 VS Code 中创建和激活虚拟环境。
+使用 VS Code 需要先安装一些插件，可以参考：
+- VS Code 配置：https://www.runoob.com/python3/python-vscode-setup.html
+- Python 开发环境配置：https://www.runoob.com/vscode/vscode-extensions-chinese.html
+- pip 相关配置：https://www.runoob.com/w3cnote/python-pip-install-usage.html
+
+在 VS Code 中打开项目文件夹，随后点击最上方的搜索框，输入 `> Python: Select Interpreter`（不区分大小写），选择创建虚拟环境 `Python: Create Virtual Environment`，选择之前安装的 Python 版本，随后理论上会提示安装requirements.txt的依赖。
+
+在 VS Code 中，通过 `Ctrl + ~` 快捷键可以打开终端，如果创建了虚拟环境，打开终端时应当会自动启用虚拟环境。
 
 ### 对于 Windows 用户 (使用 PowerShell):
 
@@ -72,11 +86,20 @@ source .venv/bin/activate
 ## 3. 安装项目依赖
 
 现在，我们来安装这个项目所需要的所有第三方库。
+**如果你前面使用了 VS Code，那么理论上这一步可以跳过。**
 
 ```bash
 # 确保你已经激活了虚拟环境（命令行前面有 .venv）
 # 使用 pip 工具读取 requirements.txt 文件并自动安装所有依赖
 pip install -r requirements.txt
+
+# 如果下载失败，切换至国内镜像源或使用代理
+# 设置全局镜像源
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+# 阿里源
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
+# 清华源
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 ```
 这个过程可能会持续几分钟，具体时间取决于你的网络速度。请耐心等待它完成。
 

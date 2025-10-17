@@ -4,10 +4,10 @@ uvicorn[standard]
 python-multipart
 
 # 模型推理
-onnxruntime
+onnxruntime==1.23.1
 
 # 图像处理
-numpy
+numpy==2.2.6
 opencv-python-headless  # 使用headless版本，无需GUI库
 Pillow
 
