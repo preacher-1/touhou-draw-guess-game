@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import predict
 
 # 创建FastAPI应用实例
-app = FastAPI(title="CampusVision AI Service")
+app = FastAPI(title="东方杏坛铭AI推理API", version="0.1")
 
 # --- 配置CORS中间件 ---
 # 允许所有来源，方便前端本地开发调试
@@ -26,4 +26,4 @@ app.include_router(predict.router, prefix="/api", tags=["Prediction"])
 # --- 定义根路径 ---
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the CampusVision AI Inference API"}
+    return {"message": "欢迎使用东方杏坛铭AI推理API。访问 /docs 查看API文档。"}

@@ -77,3 +77,44 @@ async def predict_top5(model_output: Annotated[np.ndarray, Depends(run_inference
         return PredictionResponse(results=results)
     except Exception as e:
         return PredictionResponse(success=False, results=[], error_message=str(e))
+
+
+@router.post(
+    "/predict/top5/mock",
+    response_model=PredictionResponse,
+    summary="Mock Top-5 Predictions",
+)
+async def predict_top5_mock():
+    """
+    返回模拟的置信度**前5名**的结果，用于测试。
+    """
+    try:
+        # 这里返回一些硬编码的模拟结果
+        mock_results = [
+            {"label": "mock_label_1", "confidence": 0.9},
+            {"label": "mock_label_2", "confidence": 0.05},
+            {"label": "mock_label_3", "confidence": 0.03},
+            {"label": "mock_label_4", "confidence": 0.01},
+            {"label": "mock_label_5", "confidence": 0.009},
+            {"label": "mock_label_6", "confidence": 0.001},
+        ]
+        return PredictionResponse(results=mock_results)
+    except Exception as e:
+        return PredictionResponse(success=False, results=[], error_message=str(e))
+
+
+@router.post(
+    "/predict/top1/mock",
+    response_model=PredictionResponse,
+    summary="Mock Top-1 Prediction",
+)
+async def predict_top1_mock():
+    """
+    返回模拟的置信度最高的结果，用于测试。
+    """
+    try:
+        # 这里返回一个硬编码的模拟结果
+        mock_result = [{"label": "mock_label_1", "confidence": 0.95}]
+        return PredictionResponse(results=mock_result)
+    except Exception as e:
+        return PredictionResponse(success=False, results=[], error_message=str(e))
