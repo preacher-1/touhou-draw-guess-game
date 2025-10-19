@@ -1,14 +1,17 @@
 # app/api/endpoints/predict.py (V0.1)
 
 import asyncio
+import traceback
 from concurrent.futures import ThreadPoolExecutor
-import onnxruntime
-import numpy as np
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from typing import Annotated
-from app.models.prediction import PredictionResponse
-from app.utils.image_processing import preprocess_image, postprocess_output
+
+import numpy as np
+import onnxruntime
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+
 from app.core.config import MODEL_PATH
+from app.models.prediction import PredictionResponse
+from app.utils.image_processing import postprocess_output, preprocess_image
 
 router = APIRouter()
 
@@ -62,6 +65,7 @@ async def predict_top1(model_output: Annotated[np.ndarray, Depends(run_inference
         results = postprocess_output(model_output, top_k=1)
         return PredictionResponse(results=results)
     except Exception as e:
+        traceback.print_exc()
         return PredictionResponse(success=False, results=[], error_message=str(e))
 
 
@@ -76,6 +80,7 @@ async def predict_top5(model_output: Annotated[np.ndarray, Depends(run_inference
         results = postprocess_output(model_output, top_k=5)
         return PredictionResponse(results=results)
     except Exception as e:
+        traceback.print_exc()
         return PredictionResponse(success=False, results=[], error_message=str(e))
 
 
