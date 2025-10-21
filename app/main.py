@@ -1,6 +1,7 @@
 # app/main.py (V0.1)
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import predict
 
@@ -23,7 +24,9 @@ app.add_middleware(
 app.include_router(predict.router, prefix="/api", tags=["Prediction"])
 
 
-# --- 定义根路径 ---
-@app.get("/")
-def read_root():
-    return {"message": "欢迎使用东方杏坛铭AI推理API。访问 /docs 查看API文档。"}
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
+# # --- 定义根路径 ---
+# @app.get("/")
+# def read_root():
+#     return {"message": "欢迎使用东方杏坛铭AI推理API。访问 /docs 查看API文档。"}
