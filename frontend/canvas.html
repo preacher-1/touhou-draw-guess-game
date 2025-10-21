@@ -23,13 +23,18 @@
 
 				<div class="group">
 					<label>笔刷大小</label>
-					<input
-						id="brush-size"
-						type="range"
-						min="1"
-						max="60"
-						value="6"
-					/>
+					<div class="brush-size-container">
+						<input
+							id="brush-size"
+							type="range"
+							min="1"
+							max="60"
+							value="6"
+						/>
+						<div class="brush-preview" id="brush-preview">
+							<div class="brush-dot" id="brush-preview-dot"></div>
+						</div>
+					</div>
 				</div>
 
 				<div class="group">
@@ -100,6 +105,7 @@
 
 				<div class="group">
 					<button class="button" id="eraser-btn">橡皮</button>
+					<button class="button" id="fill-btn">油漆桶</button>
 					<button class="button" id="download-btn">保存</button>
 				</div>
 

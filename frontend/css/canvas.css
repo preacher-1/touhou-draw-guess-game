@@ -98,6 +98,33 @@ input[type="range"] {
 	width: 100%;
 }
 
+/* ===== 笔刷大小预览样式 ===== */
+.brush-size-container {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.brush-size-container input[type="range"] {
+	flex: 1;
+}
+.brush-preview {
+	width: 64px;
+	height: 64px;
+	border: 1px solid #e5e7eb;
+	background-color: #f9fafb;
+	border-radius: 6px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	overflow: hidden;
+}
+.brush-dot {
+	background-color: #333;
+	border-radius: 50%;
+	transition: width 50ms, height 50ms;
+}
+
 .status {
 	font-size: 12px;
 	color: #6b7280;
@@ -180,7 +207,8 @@ input[type="range"] {
 }
 
 /* 橡皮按钮 active */
-.button#eraser-btn.active {
+.button#eraser-btn.active,
+.button#fill-btn.active {
 	background: #ef4444;
 	color: #fff;
 }
