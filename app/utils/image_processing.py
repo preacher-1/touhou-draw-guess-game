@@ -3,8 +3,8 @@
 import cv2
 import numpy as np
 import json
-from typing import List, Tuple
-from app.models.prediction import PredictionResult
+from typing import List
+from app.models import PredictionResult
 from app.core.config import CLASS_NAMES_PATH
 
 # --- 模型输入参数 ---

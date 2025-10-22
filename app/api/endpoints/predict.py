@@ -1,4 +1,3 @@
-# app/api/endpoints/predict.py (V0.1)
 
 import asyncio
 import traceback
@@ -10,7 +9,7 @@ import onnxruntime
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from app.core.config import MODEL_PATH
-from app.models.prediction import PredictionResponse
+from app.models import PredictionResponse
 from app.utils.image_processing import postprocess_output, preprocess_image
 
 router = APIRouter()

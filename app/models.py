@@ -1,4 +1,3 @@
-# app/models/prediction.py
 
 from pydantic import BaseModel
 from typing import List, Optional
@@ -15,7 +14,7 @@ class PredictionResult(BaseModel):
 
 class PredictionResponse(BaseModel):
     """
-    定义API返回的完整数据结构
+    定义 API 返回的完整数据结构
     """
 
     success: bool = True
