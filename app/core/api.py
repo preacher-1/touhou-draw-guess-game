@@ -56,10 +56,11 @@ staged_image_type: str | None = None
 @router.post(
     "/update_image",
     response_model=BaseResponse,
-    summary="更新暂存的图片文件",
     responses={
         400: dict(description="File must be a JPEG or PNG image")
-    }
+    },
+    summary="更新暂存的图片文件",
+    description="更新图片并转发给所有监听客户端\n\n不会立刻进行分类推理计算，分类推理计算会按照后端固定的间隔进行"
 )
 async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
     global staged_image_bytes, staged_image_type
@@ -71,7 +72,6 @@ async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
 
 @router.get(
     "/get_image",
-    summary="获取当前暂存的图像",
     response_class=Response,
     responses={
         200: {
@@ -82,7 +82,9 @@ async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
             },
         },
         404: dict(description="No staged image ready yet")
-    }
+    },
+    summary="获取当前暂存的图像",
+    description="推荐使用 `/ws/listener` 监听 `type: \"image\"` 避免反复轮询"
 )
 async def get_image():
     if staged_image_bytes is None:
@@ -161,10 +163,11 @@ async def run_inference(image_bytes: bytes):
 @router.get(
     "/top1",
     response_model=PredictionResponse,
-    summary="得到 Top-1 的结果",
     responses={
         404: dict(description="No staged result ready yet")
-    }
+    },
+    summary="得到 Top-1 的结果",
+    description="推荐使用 `/ws/listener` 监听 `type: \"top5\"` 避免反复轮询"
 )
 async def predict_top1():
     """
@@ -178,10 +181,11 @@ async def predict_top1():
 @router.get(
     "/top5",
     response_model=PredictionResponse,
-    summary="得到 Top-5 的结果",
     responses={
         404: dict(description="No staged result ready yet")
-    }
+    },
+    summary="得到 Top-5 的结果",
+    description="推荐使用 `/ws/listener` 监听 `type: \"top5\"` 避免反复轮询"
 )
 async def predict_top5():
     """
