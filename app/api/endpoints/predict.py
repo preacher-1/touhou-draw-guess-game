@@ -96,12 +96,11 @@ async def predict_top5_mock():
     try:
         # 这里返回一些硬编码的模拟结果
         mock_results = [
-            {"label": "mock_label_1", "confidence": 0.9},
-            {"label": "mock_label_2", "confidence": 0.05},
-            {"label": "mock_label_3", "confidence": 0.03},
-            {"label": "mock_label_4", "confidence": 0.01},
-            {"label": "mock_label_5", "confidence": 0.009},
-            {"label": "mock_label_6", "confidence": 0.001},
+            {"label": "alice_margatroid", "score": 0.9},
+            {"label": "konpaku_youmu", "score": 0.05},
+            {"label": "tamatsukuri_misumaru", "score": 0.03},
+            {"label": "usami_renko", "score": 0.01},
+            {"label": "ebisu_eika", "score": 0.009},
         ]
         return PredictionResponse(results=mock_results)
     except Exception as e:
@@ -119,7 +118,7 @@ async def predict_top1_mock():
     """
     try:
         # 这里返回一个硬编码的模拟结果
-        mock_result = [{"label": "mock_label_1", "confidence": 0.95}]
+        mock_result = [{"label": "alice_margatroid", "score": 0.9}]
         return PredictionResponse(results=mock_result)
     except Exception as e:
         return PredictionResponse(success=False, results=[], error_message=str(e))
