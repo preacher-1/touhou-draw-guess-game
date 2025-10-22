@@ -53,7 +53,7 @@ staged_image_type: str | None = None
 
 
 @router.post(
-    "/predict/update_image",
+    "/update_image",
     response_model=BaseResponse,
     summary="更新暂存的图片文件",
     responses={
@@ -68,7 +68,7 @@ async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
 
 
 @router.get(
-    "/predict/get_image",
+    "/get_image",
     summary="获取当前暂存的图像",
     response_class=Response,
     responses={
@@ -155,7 +155,7 @@ async def run_inference(image_bytes: bytes):
 # region 获取分类推理结果相关的 API
 
 @router.get(
-    "/predict/top1",
+    "/top1",
     response_model=PredictionResponse,
     summary="得到 Top-1 的结果",
     responses={
@@ -172,7 +172,7 @@ async def predict_top1():
 
 
 @router.get(
-    "/predict/top5",
+    "/top5",
     response_model=PredictionResponse,
     summary="得到 Top-5 的结果",
     responses={
@@ -189,7 +189,7 @@ async def predict_top5():
 
 
 @router.get(
-    "/predict/top1/mock", response_model=PredictionResponse, summary="得到模拟的 Top-1 结果（用于测试）",
+    "/top1/mock", response_model=PredictionResponse, summary="得到模拟的 Top-1 结果（用于测试）",
 )
 async def predict_top1_mock():
     """
@@ -201,7 +201,7 @@ async def predict_top1_mock():
 
 
 @router.get(
-    "/predict/top5/mock",
+    "/top5/mock",
     response_model=PredictionResponse,
     summary="得到模拟的 Top-5 结果（用于测试）",
 )
