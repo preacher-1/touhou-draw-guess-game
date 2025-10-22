@@ -1,4 +1,5 @@
 .DS_Store
+models/yolo11m-02-01-best.onnx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
