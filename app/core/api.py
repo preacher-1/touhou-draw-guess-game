@@ -194,37 +194,3 @@ async def predict_top5():
     if staged_top5 is None:
         raise HTTPException(status_code=404, detail="No staged result ready yet")
     return PredictionResponse(results=staged_top5)
-
-
-# @router.get(
-#     "/top1/mock", response_model=PredictionResponse, summary="得到模拟的 Top-1 结果（用于测试）",
-# )
-# async def predict_top1_mock():
-#     """
-#     返回模拟的置信度最高的结果，用于测试。
-#     """
-#     # 这里返回一个硬编码的模拟结果
-#     mock_result = [{"label": "alice_margatroid", "score": 0.9}]
-#     return PredictionResponse(results=mock_result)
-
-
-# @router.get(
-#     "/top5/mock",
-#     response_model=PredictionResponse,
-#     summary="得到模拟的 Top-5 结果（用于测试）",
-# )
-# async def predict_top5_mock():
-#     """
-#     返回模拟的置信度前5名的结果，用于测试。
-#     """
-#     # 这里返回一些硬编码的模拟结果
-#     mock_results = [
-#         {"label": "alice_margatroid", "score": 0.9},
-#         {"label": "konpaku_youmu", "score": 0.05},
-#         {"label": "tamatsukuri_misumaru", "score": 0.03},
-#         {"label": "usami_renko", "score": 0.01},
-#         {"label": "ebisu_eika", "score": 0.009},
-#     ]
-#     return PredictionResponse(results=mock_results)
-
-# endregion

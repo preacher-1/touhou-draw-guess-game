@@ -51,14 +51,6 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
         await websocket.send_text(json_text)
 
 
-# listener_docs = {
-#     "get": {
-#         "summary": "WebSocket Chat (手动描述)",
-#         "description": "通过 `ws://` 或 `wss://` 连接此端点以建立 WebSocket 通信。",
-#         "responses": {"101": {"description": "Switching Protocols"}},
-#     }
-# }
-
 listener_description = """
 用于监听的 WebSocket，在对应的资源更新时，会通过该 WebSocket 向前端发送新内容
 
