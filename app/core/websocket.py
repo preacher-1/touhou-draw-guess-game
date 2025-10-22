@@ -49,3 +49,81 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
     })
     for websocket in active_listeners:
         await websocket.send_text(json_text)
+
+
+# listener_docs = {
+#     "get": {
+#         "summary": "WebSocket Chat (手动描述)",
+#         "description": "通过 `ws://` 或 `wss://` 连接此端点以建立 WebSocket 通信。",
+#         "responses": {"101": {"description": "Switching Protocols"}},
+#     }
+# }
+
+listener_description = """
+用于监听的 WebSocket，在对应的资源更新时，会通过该 WebSocket 向前端发送新内容
+
+其中包括 `image` 和 `top5` 两个类型
+
+JSON 示例：
+
+```json
+{
+    "type": "image",
+    "image": {
+        "type": "image/png",
+        "base64": "iVBORw0KGgoAAAANSUhEUgAA..."
+    }
+}
+```
+
+```json
+{
+    "type": "top5",
+    "results": [
+        {
+            "label": "saigyouji_yuyuko",
+            "score": 0.9818522930145264
+        },
+        {
+            "label": "onozuka_komachi",
+            "score": 0.007961973547935486
+        },
+        {
+            "label": "konpaku_youmu",
+            "score": 0.004716822877526283
+        },
+        {
+            "label": "maribel_hearn",
+            "score": 0.0012106532230973244
+        },
+        {
+            "label": "kaku_seiga",
+            "score": 0.0011601087171584368
+        }
+    ]
+}
+```
+
+前端示例：
+
+```js
+const ws = new WebSocket("/ws/listener")
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === "image") {
+        console.log("Receiving image ...");
+        // ...
+    } else if (data.type === "top5") {
+        console.log("Receiving top5 ...")
+        // ...
+    }
+};
+```
+"""
+
+listener_docs = {
+    "/ws/listener": {
+        "description": listener_description,
+    }
+}

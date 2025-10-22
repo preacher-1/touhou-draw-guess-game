@@ -1,4 +1,3 @@
-# app/main.py (V0.1)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,6 +22,20 @@ app.add_middleware(
 # 将 predict.py 中定义的路由包含进来
 app.include_router(api.router, prefix="/api", tags=["API"])
 app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
+
+
+# 注入 websocket 文档
+origin_openapi = app.openapi
+
+
+def custom_openapi(*args, **kwargs):
+    ret = origin_openapi(*args, **kwargs)
+    components = app.openapi_schema["components"]
+    components["schemas"] = {**websocket.listener_docs, **components["schemas"]}
+    return ret
+
+
+app.openapi = custom_openapi
 
 
 # --- 定义根路径 ---
