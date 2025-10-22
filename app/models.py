@@ -1,6 +1,12 @@
 
 from pydantic import BaseModel
-from typing import List, Optional
+
+
+class BaseResponse(BaseModel):
+    """
+    基础 API 返回结构，只带有是否成功
+    """
+    success: bool = True
 
 
 class PredictionResult(BaseModel):
@@ -12,11 +18,8 @@ class PredictionResult(BaseModel):
     score: float  # 置信度
 
 
-class PredictionResponse(BaseModel):
+class PredictionResponse(BaseResponse):
     """
-    定义 API 返回的完整数据结构
+    分类推理 API 返回的完整数据结构
     """
-
-    success: bool = True
-    results: List[PredictionResult]
-    error_message: Optional[str] = None
+    results: list[PredictionResult]

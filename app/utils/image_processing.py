@@ -3,7 +3,6 @@
 import cv2
 import numpy as np
 import json
-from typing import List
 from app.models import PredictionResult
 from app.core.config import CLASS_NAMES_PATH
 
@@ -11,7 +10,7 @@ from app.core.config import CLASS_NAMES_PATH
 MODEL_INPUT_SIZE = (224, 224)  # (width, height)
 
 
-def load_class_names() -> List[str]:
+def load_class_names() -> list[str]:
     """从JSON文件中加载类别名称"""
     with open(CLASS_NAMES_PATH, "r", encoding="utf-8") as f:
         class_names = json.load(f)
@@ -52,7 +51,7 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
 
 def postprocess_output(
     model_output: np.ndarray, top_k: int = 1
-) -> List[PredictionResult]:
+) -> list[PredictionResult]:
     """
     对分类模型的输出进行后处理，并返回Top-K个结果
 
@@ -61,7 +60,7 @@ def postprocess_output(
         top_k (int): 需要返回的前k个结果数量
 
     Returns:
-        List[PredictionResult]: 包含k个预测结果的列表
+        list[PredictionResult]: 包含k个预测结果的列表
     """
     # 1. 移除批次维度 (1, 135) -> (135,)
     probabilities = model_output[0]
@@ -79,3 +78,7 @@ def postprocess_output(
         )
 
     return results
+
+
+def format_results(results: list[PredictionResult]) -> str:
+    return ', '.join(f'{r.label}={r.score}' for r in results)
