@@ -36,8 +36,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    stop_predict_timer()
-
 
 router = APIRouter(lifespan=lifespan)
 
@@ -94,7 +92,6 @@ async def get_image():
 
 # region 定时计算暂存的图片的模型推理结果
 
-stop_event = asyncio.Event()
 computed_bytes: bytes | None = None     # 用于判断图片是否更新，详见 do_predict_for_staged_image
 staged_top5: list[PredictionResult] | None = None
 
@@ -103,14 +100,10 @@ def start_predict_timer():
     asyncio.create_task(predict_timer())
 
 
-def stop_predict_timer():
-    stop_event.set()
-
-
 async def predict_timer():
     interval = 1
 
-    while not stop_event.is_set():
+    while True:
         start_time = time.monotonic()
 
         try:
