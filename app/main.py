@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core import api
+from app.core import api, websocket
 
 # 创建FastAPI应用实例
 app = FastAPI(title="东方杏坛铭AI推理API", version="0.1")
@@ -22,6 +22,7 @@ app.add_middleware(
 # --- 包含API路由 ---
 # 将 predict.py 中定义的路由包含进来
 app.include_router(api.router, prefix="/api", tags=["API"])
+app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 
 
 # --- 定义根路径 ---

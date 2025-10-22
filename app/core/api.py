@@ -11,6 +11,7 @@ from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
                      Response, UploadFile)
 
 from app.core.config import MODEL_PATH
+from app.core.websocket import on_image_updated, on_predict_updated
 from app.models import BaseResponse, PredictionResponse, PredictionResult
 from app.utils.image_processing import (format_results, postprocess_output,
                                         preprocess_image)
@@ -40,13 +41,13 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 
+# region 更新图片
+
 def check_is_image(file: UploadFile = File(...)):
     if file.content_type not in ["image/jpeg", "image/png"]:
         raise HTTPException(status_code=400, detail="File must be a JPEG or PNG image")
     return file
 
-
-# region 更新图片
 
 staged_image_bytes: bytes | None = None
 staged_image_type: str | None = None
@@ -64,6 +65,7 @@ async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
     global staged_image_bytes, staged_image_type
     staged_image_bytes = await file.read()
     staged_image_type = file.content_type
+    asyncio.create_task(on_image_updated(staged_image_bytes, staged_image_type))
     return BaseResponse()
 
 
@@ -131,6 +133,8 @@ async def do_predict_for_staged_image():
     staged_top5 = postprocess_output(model_output, top_k=5)
     computed_bytes = staged_image_bytes
     log.info(f'当前推理结果：{format_results(staged_top5)}')
+
+    asyncio.create_task(on_predict_updated(staged_top5))
 
 
 pool = ThreadPoolExecutor(max_workers=4)
