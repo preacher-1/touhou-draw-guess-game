@@ -35,7 +35,7 @@
 			canvas.height = Math.round(img.height * ratio);
 			const ctx = canvas.getContext("2d");
 			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-			callback(canvas.toDataURL("image/png"));
+			callback(canvas.toDataURL("image/jpeg"));
 		};
 		img.src = dataURL;
 	};

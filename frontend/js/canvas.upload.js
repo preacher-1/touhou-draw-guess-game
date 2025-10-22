@@ -16,19 +16,30 @@
 
 	App.uploadCanvas = function (last_action = "auto") {
 		if (!App.fabricCanvas) return;
-		const dataURL = App.fabricCanvas.toDataURL({ format: "png" });
-		App.utils.dataURLResize(
-			dataURL,
-			App.config.MAX_SIDE,
-			(smallDataURL) => {
-				App.sendMessage({
-					type: "canvas_update",
-					round: App.getRoundInputValue(),
-					data_url: smallDataURL,
-					last_action: last_action,
-					timestamp: Date.now(),
-				});
-			}
-		);
+		const dataURL = App.fabricCanvas.toDataURL({
+			format: "jpeg",
+			quality: 1,
+		});
+		App.sendMessage({
+			type: "canvas_update",
+			// round: App.getRoundInputValue(),
+			data_url: dataURL,
+			last_action: last_action,
+			timestamp: Date.now(),
+		});
+		console.log("canvas upload");
+		// App.utils.dataURLResize(
+		// 	dataURL,
+		// 	App.config.MAX_SIDE,
+		// 	(smallDataURL) => {
+		// 		App.sendMessage({
+		// 			type: "canvas_update",
+		// 			// round: App.getRoundInputValue(),
+		// 			data_url: smallDataURL,
+		// 			last_action: last_action,
+		// 			timestamp: Date.now(),
+		// 		});
+		// 	}
+		// );
 	};
 })(window.CanvasApp);

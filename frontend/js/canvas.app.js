@@ -47,9 +47,7 @@ window.CanvasApp = {
 		App.initFabricCanvas();
 		App.initColorPickerAndTools();
 
-		// NOTE: WebSocket 连接是否需要启用由你当前项目决定；
-		// 如果你希望启用 websocket，请把下一行取消注释：
-		// App.connectWebSocket();
+		App.connectWebSocket();
 
 		console.log("[系统] 画布模块初始化完成");
 	};
