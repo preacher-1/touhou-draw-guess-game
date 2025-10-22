@@ -1,11 +1,11 @@
-# app/main.py (V0.1)
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.websocket import manager
 from app.core.state import canvas_state
-from app.api.endpoints import predict
+from app.core import api, websocket
 from fastapi.responses import RedirectResponse
 
 # 创建FastAPI应用实例
@@ -24,7 +24,22 @@ app.add_middleware(
 
 # --- 包含API路由 ---
 # 将 predict.py 中定义的路由包含进来
-app.include_router(predict.router, prefix="/api", tags=["Prediction"])
+app.include_router(api.router, prefix="/api", tags=["API"])
+app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
+
+
+# 注入 websocket 文档
+origin_openapi = app.openapi
+
+
+def custom_openapi(*args, **kwargs):
+    ret = origin_openapi(*args, **kwargs)
+    components = app.openapi_schema["components"]
+    components["schemas"] = {**websocket.listener_docs, **components["schemas"]}
+    return ret
+
+
+app.openapi = custom_openapi
 
 # 推荐：将静态资源挂载到 /static
 app.mount("/static", StaticFiles(directory="frontend", html=True), name="static")

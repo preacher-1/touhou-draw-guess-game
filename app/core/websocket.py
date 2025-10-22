@@ -1,52 +1,121 @@
-# app/core/websocket.py
-from fastapi import WebSocket
-from typing import Dict, List
+import base64
 import json
 
+from fastapi import APIRouter, WebSocket
 
-class ConnectionManager:
-    def __init__(self):
-        # 按客户端类型区分连接
-        self.active_connections: Dict[str, List[WebSocket]] = {
-            "canvas": [],
-            "display": [],
-            "admin": [],
-            "unknown": [],
-        }
+from app.models import PredictionResult
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections["unknown"].append(websocket)
+router = APIRouter()
 
-    def disconnect(self, websocket: WebSocket):
-        for client_type in self.active_connections:
-            if websocket in self.active_connections[client_type]:
-                self.active_connections[client_type].remove(websocket)
+active_listeners: list[WebSocket] = []
+
+
+@router.websocket("/listener")
+async def register_listener(websocket: WebSocket):
+    await websocket.accept()
+    active_listeners.append(websocket)
+
+    try:
+        while True:
+            msg = await websocket.receive()
+            if msg.get('type', '') == 'websocket.disconnect':
                 break
+    finally:
+        active_listeners.remove(websocket)
 
-    def set_client_type(self, websocket: WebSocket, client_type: str):
-        if websocket in self.active_connections["unknown"]:
-            self.active_connections["unknown"].remove(websocket)
-            if client_type not in self.active_connections:
-                client_type = "unknown"
-            self.active_connections[client_type].append(websocket)
 
-    # 向指定类型的客户端广播
-    async def broadcast(self, message: dict, clients: List[str] = ["display", "admin"]):
-        message_json = json.dumps(message)
-        for client_type in clients:
-            for connection in self.active_connections[client_type]:
-                await connection.send_text(message_json)
-        print("broadcast to", clients)
+async def on_image_updated(staged_image_bytes: bytes, staged_image_type: str):
+    json_text = json.dumps({
+        "type": "image",
+        "image": {
+            "type": staged_image_type,
+            "base64": base64.b64encode(staged_image_bytes).decode("utf-8"),
+        }
+    })
+    for websocket in active_listeners:
+        await websocket.send_text(json_text)
 
-    # 向所有客户端广播
-    async def broadcast_all(self, message: dict):
-        message_json = json.dumps(message)
-        all_connections = [
-            conn for conns in self.active_connections.values() for conn in conns
+
+async def on_predict_updated(staged_top5: list[PredictionResult]):
+    json_text = json.dumps({
+        "type": "top5",
+        "results": [
+            {
+                "label": result.label,
+                "score": result.score
+            }
+            for result in staged_top5
         ]
-        for connection in all_connections:
-            await connection.send_text(message_json)
+    })
+    for websocket in active_listeners:
+        await websocket.send_text(json_text)
 
 
-manager = ConnectionManager()
+listener_description = """
+用于监听的 WebSocket，在对应的资源更新时，会通过该 WebSocket 向前端发送新内容
+
+其中包括 `image` 和 `top5` 两个类型
+
+JSON 示例：
+
+```json
+{
+    "type": "image",
+    "image": {
+        "type": "image/png",
+        "base64": "iVBORw0KGgoAAAANSUhEUgAA..."
+    }
+}
+```
+
+```json
+{
+    "type": "top5",
+    "results": [
+        {
+            "label": "saigyouji_yuyuko",
+            "score": 0.9818522930145264
+        },
+        {
+            "label": "onozuka_komachi",
+            "score": 0.007961973547935486
+        },
+        {
+            "label": "konpaku_youmu",
+            "score": 0.004716822877526283
+        },
+        {
+            "label": "maribel_hearn",
+            "score": 0.0012106532230973244
+        },
+        {
+            "label": "kaku_seiga",
+            "score": 0.0011601087171584368
+        }
+    ]
+}
+```
+
+前端示例：
+
+```js
+const ws = new WebSocket("/ws/listener")
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === "image") {
+        console.log("Receiving image ...");
+        // ...
+    } else if (data.type === "top5") {
+        console.log("Receiving top5 ...")
+        // ...
+    }
+};
+```
+"""
+
+listener_docs = {
+    "/ws/listener": {
+        "description": listener_description,
+    }
+}
