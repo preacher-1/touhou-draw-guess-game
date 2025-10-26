@@ -56,7 +56,7 @@ async def on_boardcast(params: dict):
 listener_description = """
 用于监听的 WebSocket，在对应的资源更新时，会通过该 WebSocket 向前端发送新内容
 
-其中包括 `image` 和 `top5` 类型，也包括 `/boardcast` 接口广播的内容
+其中包括 `image` 和 `top5` 类型，也包括 `/api/boardcast` 接口广播的内容
 
 JSON 示例：
 
