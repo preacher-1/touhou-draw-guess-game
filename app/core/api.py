@@ -11,7 +11,8 @@ from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
                      Response, UploadFile)
 
 from app.core.config import MODEL_PATH
-from app.core.websocket import on_image_updated, on_predict_updated
+from app.core.websocket import (on_boardcast, on_image_updated,
+                                on_predict_updated)
 from app.models import BaseResponse, PredictionResponse, PredictionResult
 from app.utils.image_processing import (format_results, postprocess_output,
                                         preprocess_image)
@@ -194,3 +195,22 @@ async def predict_top5():
     if staged_top5 is None:
         raise HTTPException(status_code=404, detail="No staged result ready yet")
     return PredictionResponse(results=staged_top5)
+
+
+@router.post(
+    "/boardcast",
+    response_model=BaseResponse,
+    responses={
+        400: dict(description="Missing required field: 'type'")
+    },
+    summary="向所有监听客户端广播提供的参数",
+    description="需要带有 `type` 字段，以便客户端区分消息类型"
+)
+async def boardcast(params: dict):
+    """
+    向所有监听客户端广播提供的参数。
+    """
+    if "type" not in params:
+        raise HTTPException(status_code=400, detail="Missing required field: 'type'")
+    asyncio.create_task(on_boardcast(params))
+    return BaseResponse()

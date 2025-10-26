@@ -25,19 +25,17 @@ async def register_listener(websocket: WebSocket):
 
 
 async def on_image_updated(staged_image_bytes: bytes, staged_image_type: str):
-    json_text = json.dumps({
+    await on_boardcast({
         "type": "image",
         "image": {
             "type": staged_image_type,
             "base64": base64.b64encode(staged_image_bytes).decode("utf-8"),
         }
     })
-    for websocket in active_listeners:
-        await websocket.send_text(json_text)
 
 
 async def on_predict_updated(staged_top5: list[PredictionResult]):
-    json_text = json.dumps({
+    await on_boardcast({
         "type": "top5",
         "results": [
             {
@@ -47,6 +45,10 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
             for result in staged_top5
         ]
     })
+
+
+async def on_boardcast(params: dict):
+    json_text = json.dumps(params)
     for websocket in active_listeners:
         await websocket.send_text(json_text)
 
@@ -54,7 +56,7 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
 listener_description = """
 用于监听的 WebSocket，在对应的资源更新时，会通过该 WebSocket 向前端发送新内容
 
-其中包括 `image` 和 `top5` 两个类型
+其中包括 `image` 和 `top5` 类型，也包括 `/boardcast` 接口广播的内容
 
 JSON 示例：
 
