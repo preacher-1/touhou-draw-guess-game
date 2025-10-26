@@ -216,7 +216,7 @@ async def game_timer_task():
     "/reset_timer",
     response_model=BaseResponse,
     summary="重置定时器",
-    description=f"将定时器重置并暂停，会广播 `{{\"type\": \"timer\", \"value\": \"{TIMER_MAX_VALUE}\", \"by\": \"reset\"}}` 给所有监听客户端"
+    description=f"将定时器重置并暂停，会广播 `{{\"type\": \"timer\", \"value\": {TIMER_MAX_VALUE}, \"by\": \"reset\"}}` 给所有监听客户端"
 )
 async def reset_game_timer():
     """
