@@ -24,8 +24,8 @@
         background-color: rgba(185, 44, 44, 0);         /* 透明背景，调试时可视化容器用 */
         display: inline-block;
         position: relative;
-        margin-left: 5vw;
-        margin-right: 1vw;
+        margin-left: 3vw;
+        margin-right: 2vw;
     }
 
     #timer {
@@ -41,7 +41,6 @@
 
     #canvas {
         width: 48vw;
-        height: 36vw;
         background-color: rgb(0, 0, 0);
         position: absolute;
         top: 0px;
@@ -55,8 +54,8 @@
         position: relative;
         width: 38vw;
         justify-content: center;
-        margin-left: 2vw;
-        margin-right: 1vw;
+        margin-left: 1vw;
+        margin-right: 3vw;
         padding: 0.5vh 1vw 0.5vh 1vw;
     }
 
@@ -64,8 +63,9 @@
         margin-bottom: 1vh;
     }
 
-    #result-top2,#result-top4{
-        min-width: 18vw;      /* 调整Top2和Top4的宽度，使Top3和Top5对齐 */
+    #result-top2, #result-top3, #result-top4, #result-top5{
+        max-width: 17vw;
+        min-width: 17vw;      /* 调整Top2和Top4的宽度，使Top3和Top5对齐 */
     }
 
     .result-nameCN {
