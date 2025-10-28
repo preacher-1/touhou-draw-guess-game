@@ -10,9 +10,11 @@ import onnxruntime
 from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
                      Response, UploadFile)
 
-from app.core.config import MODEL_PATH
-from app.core.websocket import on_image_updated, on_predict_updated
+from app.core.config import MODEL_PATH, PREDICT_INTERVAL, TIMER_MAX_VALUE
+from app.core.websocket import (on_boardcast, on_image_updated,
+                                on_predict_updated)
 from app.models import BaseResponse, PredictionResponse, PredictionResult
+from app.utils.fix_job_time import fix_job_time
 from app.utils.image_processing import (format_results, postprocess_output,
                                         preprocess_image)
 
@@ -33,7 +35,8 @@ async def lifespan(app: FastAPI):
     print(f"Model loaded: {MODEL_PATH}\nProviders: {session.get_providers()}")
     input_name = session.get_inputs()[0].name
 
-    start_predict_timer()
+    asyncio.create_task(predict_timer())
+    asyncio.create_task(game_timer_task())
 
     yield
 
@@ -100,25 +103,13 @@ computed_bytes: bytes | None = None     # 用于判断图片是否更新，详�
 staged_top5: list[PredictionResult] | None = None
 
 
-def start_predict_timer():
-    asyncio.create_task(predict_timer())
-
-
 async def predict_timer():
-    interval = 1
-
     while True:
-        start_time = time.monotonic()
-
-        try:
-            await do_predict_for_staged_image()
-        except Exception as e:
-            log.error(f"定时推理任务出现错误：{e}")
-
-        # 计算任务耗时，await (计划用时 - 任务耗时) 即可让任务定时触发
-        elapsed = time.monotonic() - start_time
-        wait_time = max(0, interval - elapsed)
-        await asyncio.sleep(wait_time)
+        async with fix_job_time(PREDICT_INTERVAL):
+            try:
+                await do_predict_for_staged_image()
+            except Exception as e:
+                log.error(f"定时推理任务出现错误：{e}")
 
 
 async def do_predict_for_staged_image():
@@ -194,3 +185,84 @@ async def predict_top5():
     if staged_top5 is None:
         raise HTTPException(status_code=404, detail="No staged result ready yet")
     return PredictionResponse(results=staged_top5)
+
+# endregion
+
+
+# region 定时器与广播接口
+
+reset_event = asyncio.Event()
+start_event = asyncio.Event()
+
+
+async def game_timer_task():
+    while True:
+        await start_event.wait()
+
+        for remaining in range(TIMER_MAX_VALUE, -1, -1):
+            async with fix_job_time(1):
+                if reset_event.is_set():
+                    break
+                await on_boardcast({
+                    "type": "timer",
+                    "value": remaining,
+                    "by": "countdown"
+                })
+        else:
+            await reset_event.wait()
+
+
+@router.post(
+    "/reset_timer",
+    response_model=BaseResponse,
+    summary="重置定时器",
+    description=f"将定时器重置并暂停，会广播 `{{\"type\": \"timer\", \"value\": {TIMER_MAX_VALUE}, \"by\": \"reset\"}}` 给所有监听客户端"
+)
+async def reset_game_timer():
+    """
+    重置定时器。
+    """
+    reset_event.set()
+    start_event.clear()
+    asyncio.create_task(on_boardcast({
+        "type": "timer",
+        "value": TIMER_MAX_VALUE,
+        "by": "reset"
+    }))
+    return BaseResponse()
+
+
+@router.post(
+    "/start_timer",
+    response_model=BaseResponse,
+    summary="启动定时器",
+    description="启动定时器，会每隔一秒钟广播 `{\"type\": \"timer\", \"value\": (剩余时间), \"by\": \"countdown\"}` 给所有监听客户端"
+)
+async def start_game_timer():
+    """
+    启动定时器。
+    """
+    start_event.set()
+    reset_event.clear()
+    return BaseResponse()
+
+
+@router.post(
+    "/boardcast",
+    response_model=BaseResponse,
+    responses={
+        400: dict(description="Missing required field: 'type'")
+    },
+    summary="向所有监听客户端广播提供的参数",
+    description="需要带有 `type` 字段，以便客户端区分消息类型"
+)
+async def boardcast(params: dict):
+    """
+    向所有监听客户端广播提供的参数。
+    """
+    if "type" not in params:
+        raise HTTPException(status_code=400, detail="Missing required field: 'type'")
+    asyncio.create_task(on_boardcast(params))
+    return BaseResponse()
+
+# endregion
