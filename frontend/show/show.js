@@ -4,6 +4,8 @@ const ws = new WebSocket(`ws://${location.host}/ws/listener`);       // 初始�
 const imageDisplay = document.getElementById("canvas");       // 获取展示画布的元素canvas
 const timerDisplay = document.getElementById("timer");                  // 获取定时器的元素timer
 
+let currentTimerValue = 90;       // 定义一个全局变量来存储当前的定时器值
+
 /* 写完但是用不到了的穷举抓取环节
 const resultTop1_NameCN = document.getElementById("result-top1-nameCN");    // 获取top1结果的中文名称元素
 const resultTop1_NameEN = document.getElementById("result-top1-nameEN");    // 获取top1结果的英文名称元素
@@ -114,6 +116,8 @@ function updateTimer(timerData) {
         timerDisplay.textContent = `⏱ 定时器重置：${value}s`;
         timerDisplay.style.color = "#0066cc";
 
+        currentTimerValue = value;
+
         // 重置识别结果
         for (let rank = 1; rank <= 5; rank++) {
 
@@ -133,6 +137,8 @@ function updateTimer(timerData) {
 
     // 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
     } else if (timerData.by === "countdown") {
+        currentTimerValue = timerData.value;
+
         let timerDataMinute = Math.floor(timerData.value / 60);
         let timerDataSecond = timerData.value % 60;
         // 格式化为两位数（补零）
@@ -214,7 +220,7 @@ function updateTop5(results) {
         const Similarity = document.getElementById(`result-top${rank}-similarity-value`);
         const image = document.getElementById(`result-top${rank}-image`);
 
-        if (timerDisplay <= 30) {   // 如果定时器小于等于30秒，隐藏结果
+        if (currentTimerValue <= 30) {   // 如果定时器小于等于30秒，隐藏结果
             // 改变元素内容
             NameCN.innerText = "？？？"; // 设置中文名为未知
             NameEN.innerText = "？？？"; // 设置英文名为未知
