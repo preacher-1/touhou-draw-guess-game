@@ -1,110 +1,262 @@
 <!DOCTYPE html>
-<html lang = "zh-CN">
-<head>
-    <meta charset = "UTF-8">
-    <meta name = "viewport" content="width=device-width, initial-scale=1.0">
-    <title>东方杏坛铭 Draw&Guess</title>
-    <link rel = "stylesheet" href = "show.css" />
-</head>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>东方杏坛铭 Draw&Guess</title>
+		<link rel="stylesheet" href="show.css" />
+	</head>
 
-<body>
-    <h1 style="text-align: center; margin-bottom: 2vh; margin-top: 5vh;">东方杏坛铭 Draw&Guess</h1>
+	<body>
+		<h1 style="text-align: center; margin-bottom: 2vh; margin-top: 5vh">
+			东方杏坛铭 Draw&Guess
+		</h1>
 
-    <div id = "main-content" style = "display: flex; align-items: center;">
+		<div id="main-content" style="display: flex; align-items: center">
+			<!--画布区-->
+			<div style="display: inline-block" class="canvas-container">
+				<div id="timer">⏳00:00</div>
+				<img
+					src="../images/others/empty-canvas.png"
+					alt="画布"
+					id="canvas"
+				/>
+				<div style="height: 36vw"></div>
+				<!-- 画布占位符，说不定会用到……？ -->
+			</div>
 
-        <!--画布区-->
-        <div style="display: inline-block;" class = "canvas-container">   
-            <div id= "timer" >⏳00:00</div>     
-            <img src = "../images/others/empty-canvas.png" alt = "画布" id = "canvas" />
-            <div style = "height: 36vw;"></div>     <!-- 画布占位符，说不定会用到……？ -->
-        </div>
-       
-        <!--模型识别结果区域-->
-        <div display = "inline-block" class = "result"> 
+			<!--模型识别结果区域-->
+			<div display="inline-block" class="result">
+				<!--模型识别结果top1，占据板块更大-->
+				<div>
+					<p style="font-size: 4vw" class="text-top-title">
+						<b>Top1 </b>
+					</p>
+					<div
+						style="display: flex; align-items: flex-start; gap: 1vw"
+					>
+						<img
+							src="../images/chr/satsuki_rin_unknown.png"
+							alt="Top1"
+							style="width: 14vw"
+							id="result-top1-image"
+						/>
+						<div>
+							<p
+								class="result-nameCN"
+								id="result-top1-nameCN"
+								style="font-size: 3vw"
+							>
+								？？？
+							</p>
+							<p
+								class="result-nameEN"
+								id="result-top1-nameEN"
+								style="font-size: 2vw"
+							>
+								？？？
+							</p>
+							<hr />
+							<span
+								class="result-similarity"
+								style="font-size: 2vw"
+								>相似度：</span
+							>
+							<span
+								class="result-similarity"
+								id="result-top1-similarity-value"
+								style="font-size: 2vw"
+								>??%</span
+							>
+						</div>
+					</div>
+				</div>
 
-            <!--模型识别结果top1，占据板块更大--> 
-            <div>
-                <p style = "font-size: 4vw;" class = "text-top-title"> <b>Top1 </b></p>
-                <div style = "display: flex; align-items: flex-start; gap: 1vw;">        
-                    <img src = "../images/chr/satsuki_rin_unknown.png" alt = "Top1" style = "width: 14vw" id = "result-top1-image"/>
-                    <div>
-                        <p class = "result-nameCN" id = "result-top1-nameCN" style = "font-size: 3vw;">？？？</p>
-                        <p class = "result-nameEN" id = "result-top1-nameEN" style = "font-size: 2vw;">？？？</p>
-                        <hr>
-                        <span class = "result-similarity" style = "font-size: 2vw;">相似度：</span>
-                        <span class = "result-similarity" id = "result-top1-similarity-value" style = "font-size: 2vw;">??%</span>
-                    </div>
-                </div>
-            </div>
+				<!--模型识别结果top2~top3-->
+				<div style="display: flex; align-items: flex-start; gap: 1vw">
+					<div display="inline-block" id="result-top2">
+						<p style="font-size: 2vw" class="text-top-title">
+							<b>Top2 </b>
+						</p>
+						<!--Top2标题-->
+						<div
+							style="
+								display: flex;
+								align-items: flex-start;
+								gap: 1vw;
+							"
+						>
+							<!--Top2内容块-->
+							<img
+								src="../images/chr/satsuki_rin_unknown.png"
+								alt="Top2"
+								style="width: 7vw"
+								id="result-top2-image"
+							/>
+							<!--图片-->
+							<div>
+								<!--文字信息块-->
+								<p
+									class="result-nameCN"
+									id="result-top2-nameCN"
+								>
+									？？？
+								</p>
+								<p
+									class="result-nameEN"
+									id="result-top2-nameEN"
+								>
+									？？？
+								</p>
+								<hr />
+								<span class="result-similarity">相似度：</span>
+								<span
+									class="result-similarity"
+									id="result-top2-similarity-value"
+									>??%</span
+								>
+								<!--相似度-->
+							</div>
+						</div>
+					</div>
+					<!--Top2结束，其余内容块结构相同-->
 
-            <!--模型识别结果top2~top3-->
-            <div style = "display: flex; align-items: flex-start; gap: 1vw;">    
-                <div display = "inline-block" id = "result-top2">
-                    <p style = "font-size: 2vw;" class = "text-top-title"> <b>Top2 </b></p>       <!--Top2标题-->
-                    <div style = "display: flex; align-items: flex-start; gap: 1vw;">       <!--Top2内容块-->
-                        <img src = "../images/chr/satsuki_rin_unknown.png" alt = "Top2" style = "width: 7vw" id = "result-top2-image"/>      <!--图片-->   
-                            <div>                                                                                   <!--文字信息块-->
-                            <p class = "result-nameCN" id = "result-top2-nameCN">？？？</p>
-                            <p class = "result-nameEN" id = "result-top2-nameEN">？？？</p>
-                            <hr>
-                            <span class = "result-similarity">相似度：</span>
-                            <span class = "result-similarity" id = "result-top2-similarity-value">??%</span>      <!--相似度-->
-                        </div>
-                    </div>
-                </div>      <!--Top2结束，其余内容块结构相同-->
+					<div display="inline-block" id="result-top3">
+						<p style="font-size: 2vw" class="text-top-title">
+							<b>Top3 </b>
+						</p>
+						<div
+							style="
+								display: flex;
+								align-items: flex-start;
+								gap: 1vw;
+							"
+						>
+							<img
+								src="../images/chr/satsuki_rin_unknown.png"
+								alt="Top3"
+								style="width: 7vw"
+								id="result-top3-image"
+							/>
+							<div>
+								<p
+									class="result-nameCN"
+									id="result-top3-nameCN"
+								>
+									？？？
+								</p>
+								<p
+									class="result-nameEN"
+									id="result-top3-nameEN"
+								>
+									？？？
+								</p>
+								<hr />
+								<span class="result-similarity">相似度：</span>
+								<span
+									class="result-similarity"
+									id="result-top3-similarity-value"
+									>??%</span
+								>
+							</div>
+						</div>
+					</div>
+					<!--Top3结束-->
+				</div>
 
-                <div display = "inline-block" id = "result-top3">
-                    <p style = "font-size: 2vw;" class = "text-top-title"> <b>Top3 </b></p>
-                    <div style = "display: flex; align-items: flex-start; gap: 1vw;">
-                        <img src = "../images/chr/satsuki_rin_unknown.png" alt = "Top3" style = "width: 7vw" id = "result-top3-image"/>
-                            <div>
-                            <p class = "result-nameCN" id = "result-top3-nameCN">？？？</p>
-                            <p class = "result-nameEN" id = "result-top3-nameEN">？？？</p>
-                            <hr>
-                            <span class = "result-similarity">相似度：</span>
-                            <span class = "result-similarity" id = "result-top3-similarity-value">??%</span>
-                        </div>
-                    </div>
-                </div>      <!--Top3结束-->
-            </div>
+				<!--模型识别结果top4~top5-->
+				<div style="display: flex; align-items: flex-start; gap: 1vw">
+					<!--Top4和Top5，位于同一行-->
+					<div display="inline-block" id="result-top4">
+						<p style="font-size: 2vw" class="text-top-title">
+							<b>Top4 </b>
+						</p>
+						<div
+							style="
+								display: flex;
+								align-items: flex-start;
+								gap: 1vw;
+							"
+						>
+							<!--Top4内容块-->
+							<img
+								src="../images/chr/satsuki_rin_unknown.png"
+								alt="Top4"
+								style="width: 7vw"
+								id="result-top4-image"
+							/>
+							<!--图片-->
+							<div>
+								<!--文字信息块-->
+								<p
+									class="result-nameCN"
+									id="result-top4-nameCN"
+								>
+									？？？
+								</p>
+								<p
+									class="result-nameEN"
+									id="result-top4-nameEN"
+								>
+									？？？
+								</p>
+								<hr />
+								<span class="result-similarity">相似度：</span>
+								<span
+									class="result-similarity"
+									id="result-top4-similarity-value"
+									>??%</span
+								>
+							</div>
+						</div>
+					</div>
+					<!--Top4结束，其余内容块结构相同-->
 
+					<div display="inline-block" id="result-top5">
+						<p style="font-size: 2vw" class="text-top-title">
+							<b>Top5 </b>
+						</p>
+						<div
+							style="
+								display: flex;
+								align-items: flex-start;
+								gap: 1vw;
+							"
+						>
+							<img
+								src="../images/chr/satsuki_rin_unknown.png"
+								alt="Top5"
+								style="width: 7vw"
+								id="result-top5-image"
+							/>
+							<div>
+								<p
+									class="result-nameCN"
+									id="result-top5-nameCN"
+								>
+									？？？
+								</p>
+								<p
+									class="result-nameEN"
+									id="result-top5-nameEN"
+								>
+									？？？
+								</p>
+								<hr />
+								<span class="result-similarity">相似度：</span>
+								<span
+									class="result-similarity"
+									id="result-top5-similarity-value"
+									>??%</span
+								>
+							</div>
+						</div>
+					</div>
+					<!--Top5结束-->
+				</div>
+			</div>
+		</div>
 
-            <!--模型识别结果top4~top5-->
-            <div style = "display: flex; align-items: flex-start; gap: 1vw;">        <!--Top4和Top5，位于同一行-->      
-                <div display = "inline-block" id = "result-top4">
-                    <p style = "font-size: 2vw;" class = "text-top-title"> <b>Top4 </b></p>
-                    <div style = "display: flex; align-items: flex-start; gap: 1vw;">       <!--Top4内容块-->
-                        <img src = "../images/chr/satsuki_rin_unknown.png" alt = "Top4" style = "width: 7vw" id = "result-top4-image"/>      <!--图片-->   
-                            <div>                                                                                   <!--文字信息块-->
-                            <p class = "result-nameCN" id = "result-top4-nameCN">？？？</p>
-                            <p class = "result-nameEN" id = "result-top4-nameEN">？？？</p>
-                            <hr>
-                            <span class = "result-similarity">相似度：</span>
-                            <span class = "result-similarity" id = "result-top4-similarity-value">??%</span>
-                        </div>
-                    </div>
-                </div>      <!--Top4结束，其余内容块结构相同-->
-
-                <div display = "inline-block" id = "result-top5">
-                    <p style = "font-size: 2vw;" class = "text-top-title"> <b>Top5 </b></p>
-                    <div style = "display: flex; align-items: flex-start; gap: 1vw;">
-                        <img src = "../images/chr/satsuki_rin_unknown.png" alt = "Top5" style = "width: 7vw" id = "result-top5-image"/>
-                            <div>
-                            <p class = "result-nameCN" id = "result-top5-nameCN">？？？</p>
-                            <p class = "result-nameEN" id = "result-top5-nameEN">？？？</p>
-                            <hr>
-                            <span class = "result-similarity">相似度：</span>
-                            <span class = "result-similarity" id = "result-top5-similarity-value">??%</span>
-                        </div>
-                    </div>
-                </div>      <!--Top5结束-->
-            </div>
-
-        </div>
-    </div>
-
-    <script src="show.js"></script>
-
-
-</body>
+		<script src="show.js"></script>
+	</body>
 </html>

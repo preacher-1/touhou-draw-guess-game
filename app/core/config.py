@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 
@@ -18,5 +17,5 @@ CLASS_NAMES_PATH = MODEL_DIR / "class_names.json"
 CPU_WORKER_COUNT = max(1, os.cpu_count() // 2)
 
 # 其它配置
-PREDICT_INTERVAL = 1    # 预测间隔，单位秒
-TIMER_MAX_VALUE = 90    # 计时器最大值，单位秒
+PREDICT_INTERVAL = 1  # 预测间隔，单位秒
+TIMER_MAX_VALUE = 90  # 计时器最大值，单位秒

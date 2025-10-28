@@ -81,4 +81,4 @@ def postprocess_output(
 
 
 def format_results(results: list[PredictionResult]) -> str:
-    return ', '.join(f'{r.label}={r.score}' for r in results)
+    return ", ".join(f"{r.label}={r.score}" for r in results)
