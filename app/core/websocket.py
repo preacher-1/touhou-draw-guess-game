@@ -5,6 +5,7 @@ from fastapi import APIRouter, WebSocket
 
 from app.models import PredictionResult
 from app.core.state import canvas_state
+import app.core.game_logic as game_logic
 
 router = APIRouter()
 
@@ -35,6 +36,9 @@ async def register_listener(websocket: WebSocket):
                 if img_bytes and img_type:
                     # 3. 广播给 show.html
                     await on_image_updated(img_bytes, img_type)
+            elif data.get("type", "") == "command":
+                # 将命令转发给游戏逻辑处理器
+                await game_logic.dispatch(data.get("payload"))
     except Exception:
         pass
     finally:

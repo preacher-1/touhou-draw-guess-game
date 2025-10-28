@@ -21,6 +21,7 @@ from app.utils.image_processing import (
     postprocess_output,
     preprocess_image,
 )
+import app.core.game_logic as game_logic
 
 log = logging.getLogger("uvicorn")
 
@@ -40,7 +41,7 @@ async def lifespan(app: FastAPI):
     input_name = session.get_inputs()[0].name
 
     asyncio.create_task(predict_timer())
-    asyncio.create_task(game_timer_task())
+    asyncio.create_task(game_logic.game_timer_task())
 
     yield
 
@@ -169,56 +170,56 @@ async def predict_top5():
 
 # region 定时器与广播接口
 
-reset_event = asyncio.Event()
-start_event = asyncio.Event()
+# reset_event = asyncio.Event()
+# start_event = asyncio.Event()
 
 
-async def game_timer_task():
-    while True:
-        await start_event.wait()
+# async def game_timer_task():
+#     while True:
+#         await start_event.wait()
 
-        for remaining in range(TIMER_MAX_VALUE, -1, -1):
-            async with fix_job_time(1):
-                if reset_event.is_set():
-                    break
-                await on_boardcast(
-                    {"type": "timer", "value": remaining, "by": "countdown"}
-                )
-        else:
-            await reset_event.wait()
-
-
-@router.post(
-    "/reset_timer",
-    response_model=BaseResponse,
-    summary="重置定时器",
-    description=f'将定时器重置并暂停，会广播 `{{"type": "timer", "value": {TIMER_MAX_VALUE}, "by": "reset"}}` 给所有监听客户端',
-)
-async def reset_game_timer():
-    """
-    重置定时器。
-    """
-    reset_event.set()
-    start_event.clear()
-    asyncio.create_task(
-        on_boardcast({"type": "timer", "value": TIMER_MAX_VALUE, "by": "reset"})
-    )
-    return BaseResponse()
+#         for remaining in range(TIMER_MAX_VALUE, -1, -1):
+#             async with fix_job_time(1):
+#                 if reset_event.is_set():
+#                     break
+#                 await on_boardcast(
+#                     {"type": "timer", "value": remaining, "by": "countdown"}
+#                 )
+#         else:
+#             await reset_event.wait()
 
 
-@router.post(
-    "/start_timer",
-    response_model=BaseResponse,
-    summary="启动定时器",
-    description='启动定时器，会每隔一秒钟广播 `{"type": "timer", "value": (剩余时间), "by": "countdown"}` 给所有监听客户端',
-)
-async def start_game_timer():
-    """
-    启动定时器。
-    """
-    start_event.set()
-    reset_event.clear()
-    return BaseResponse()
+# @router.post(
+#     "/reset_timer",
+#     response_model=BaseResponse,
+#     summary="重置定时器",
+#     description=f'将定时器重置并暂停，会广播 `{{"type": "timer", "value": {TIMER_MAX_VALUE}, "by": "reset"}}` 给所有监听客户端',
+# )
+# async def reset_game_timer():
+#     """
+#     重置定时器。
+#     """
+#     reset_event.set()
+#     start_event.clear()
+#     asyncio.create_task(
+#         on_boardcast({"type": "timer", "value": TIMER_MAX_VALUE, "by": "reset"})
+#     )
+#     return BaseResponse()
+
+
+# @router.post(
+#     "/start_timer",
+#     response_model=BaseResponse,
+#     summary="启动定时器",
+#     description='启动定时器，会每隔一秒钟广播 `{"type": "timer", "value": (剩余时间), "by": "countdown"}` 给所有监听客户端',
+# )
+# async def start_game_timer():
+#     """
+#     启动定时器。
+#     """
+#     start_event.set()
+#     reset_event.clear()
+#     return BaseResponse()
 
 
 @router.post(
