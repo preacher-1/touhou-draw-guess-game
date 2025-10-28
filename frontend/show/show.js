@@ -133,18 +133,18 @@ function updateTimer(timerData) {
 
     // 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
     } else if (timerData.by === "countdown") {
-        timerDataMinute = Math.floor(timerData.value / 60);
-        timerDataSecond = timerData.value % 60;
+        let timerDataMinute = Math.floor(timerData.value / 60);
+        let timerDataSecond = timerData.value % 60;
         // 格式化为两位数（补零）
-        const timerDataMinute = String(timerDataMinute).padStart(2, '0');
-        const timerDataSecond = String(timerDataSecond).padStart(2, '0');
+        const timerDataMinuteStr = String(timerDataMinute).padStart(2, '0');
+        const timerDataSecondStr = String(timerDataSecond).padStart(2, '0');
         // 根据剩余时间量判断文本颜色
         if (timerData.value <= 30) {
             timerDisplay.style.color = "red";
         } else {
             timerDisplay.style.color = "black";
         }
-        timerDisplay.textContent = `⏳${timerDataMinute}:${timerDataSecond}`;
+        timerDisplay.textContent = `⏳${timerDataMinuteStr}:${timerDataSecondStr}`;
 
     // 其他情况（未指定操作类型），仅显示时间
     } else {
@@ -196,9 +196,6 @@ function updateImage(imageObj) {
 function updateTop5(results) {
     // 参数验证：确保传入的 results 是一个数组，否则直接结束函数运行
     if (!Array.isArray(results)) return;
-
-    // 定义results容器
-    const results = jsonData.results;
     
     // 定义格式化名称的函数
     function formatName(label) {

@@ -11,7 +11,7 @@
 		WS_URL:
 			(window.location.protocol === "https:" ? "wss://" : "ws://") +
 			window.location.host +
-			"/ws/canvas",
+			"/ws/listener",
 		HEARTBEAT_INTERVAL: 30000,
 
 		// 上传配置
