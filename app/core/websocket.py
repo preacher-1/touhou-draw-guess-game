@@ -1,6 +1,5 @@
 import base64
 import json
-import re
 
 from fastapi import APIRouter, WebSocket
 
@@ -21,7 +20,7 @@ async def register_listener(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             # 处理来自 canvas.html 的画布更新
-            if data.get("type") == "canvas_update":
+            if data.get("type", "") == "canvas_update":
                 data_url = data.get("data_url")
                 if not data_url:
                     continue

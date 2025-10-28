@@ -29,6 +29,10 @@ class CanvasState:
         if media_type and raw_bytes:
             self._latest_canvas_bytes = raw_bytes
             self._latest_canvas_type = media_type
+
+            from app.core.api import event_image_updated
+            event_image_updated.set()
+
             print("canvas state updated")
 
     def get_latest_canvas(self) -> str | None:
