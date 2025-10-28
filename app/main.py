@@ -1,8 +1,10 @@
-
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from app.core import api, websocket
+from fastapi.responses import RedirectResponse
 
 # 创建FastAPI应用实例
 app = FastAPI(title="东方杏坛铭AI推理API", version="0.1")
@@ -37,8 +39,11 @@ def custom_openapi(*args, **kwargs):
 
 app.openapi = custom_openapi
 
+# 推荐：将静态资源挂载到 /static
+app.mount("/static", StaticFiles(directory="frontend", html=True), name="static")
 
-# --- 定义根路径 ---
+
+# 根路径重定向到前端首页
 @app.get("/")
-def read_root():
-    return {"message": "欢迎使用东方杏坛铭AI推理API。访问 /docs 查看API文档。"}
+def root():
+    return RedirectResponse(url="/static/index.html")
