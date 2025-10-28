@@ -3,6 +3,7 @@
 const ws = new WebSocket(`ws://${location.host}/ws/listener`); // 初始定义websocket链接？
 const imageDisplay = document.getElementById("canvas"); // 获取展示画布的元素canvas
 const timerDisplay = document.getElementById("timer"); // 获取定时器的元素timer
+const roundTitle = document.getElementById("round-title"); // 获取轮次标题的元素round-title
 
 let currentTimerValue = 90; // 定义一个全局变量来存储当前的定时器值
 
@@ -186,6 +187,16 @@ ws.onmessage = (event) => {
 			case "timer":
 				updateTimer(data);
 				break;
+			case "game_state_update": // 游戏状态更新
+				updateGameState(data.payload);
+				break;
+			case "final_results": // 最终结果
+				console.log("最终结果:", data.payload);
+				if (data.payload && data.payload.results) {
+					// (true = 强制显示)
+					updateTop5(data.payload.results, true);
+				}
+				break;
 			// 若上述全不匹配，执行默认逻辑
 			default:
 				console.log("⚙️ 其它类型消息:", data);
@@ -204,6 +215,30 @@ ws.onclose = () => {
 
 // === 各类更新函数 ===
 
+// 游戏状态更新
+function updateGameState(state) {
+	const phase = state.phase;
+
+	if (phase === "IDLE") {
+		roundTitle.textContent = "游戏已重置";
+	} else if (state.round > 0) {
+		roundTitle.textContent = `第 ${state.round} 轮 - 请画出: ${state.target_name}`;
+	}
+
+	// 当进入 WAITING 阶段时 (意味着新一轮或新尝试)
+	// 我们需要重置画布和 Top5
+	if (phase === "WAITING" || phase === "IDLE") {
+		// 1. 重置画布
+		// (我们依赖 "image" 消息来清空,
+		//  后端 clear_canvas_and_broadcast 会发送)
+		// (或者, 我们在这里手动重置)
+		imageDisplay.src = "../images/others/empty-canvas.png";
+
+		// 2. 重置 Top5 列表 (复用 timer-reset 逻辑)
+		resetTop5Display();
+	}
+}
+
 // timer更新
 function updateTimer(timerData) {
 	// 获取timedata.value的值，若无则赋值为"?"
@@ -218,23 +253,10 @@ function updateTimer(timerData) {
 		currentTimerValue = value;
 
 		// 重置识别结果
-		for (let rank = 1; rank <= 5; rank++) {
-			// 抓取前端的元素
-			const NameCN = document.getElementById(`result-top${rank}-nameCN`);
-			const NameEN = document.getElementById(`result-top${rank}-nameEN`);
-			const Similarity = document.getElementById(
-				`result-top${rank}-similarity-value`
-			);
-			const image = document.getElementById(`result-top${rank}-image`);
-
-			// 改变元素内容
-			NameCN.innerText = "？？？"; // 设置中文名为未知
-			NameEN.innerText = "？？？"; // 设置英文名为未知
-			Similarity.innerText = "??%"; // 设置相似度为未知
-			image.src = `../images/chr/satsuki_rin_unknown.png`; // 设置图片路径为冴月麟的剪影，没有原因，因为我喜欢这么做）
-		}
-		// 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
-	} else if (timerData.by === "countdown") {
+		resetTop5Display();
+	}
+	// 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
+	else if (timerData.by === "countdown") {
 		currentTimerValue = timerData.value;
 
 		let timerDataMinute = Math.floor(timerData.value / 60);
@@ -245,6 +267,12 @@ function updateTimer(timerData) {
 		// 根据剩余时间量判断文本颜色
 		if (timerData.value <= 30 && timerData.value > 0) {
 			timerDisplay.style.color = "red";
+
+			// 倒计时30秒时，主动隐藏结果
+			if (timerData.value === 30) {
+				console.log("⏳ 30秒，隐藏结果...");
+				hideTop5Results(); // 隐藏结果
+			}
 		} else {
 			timerDisplay.style.color = "black";
 		}
@@ -256,10 +284,51 @@ function updateTimer(timerData) {
 	}
 }
 
+// 重置 Top5 的辅助函数
+function resetTop5Display() {
+	for (let rank = 1; rank <= 5; rank++) {
+		const NameCN = document.getElementById(`result-top${rank}-nameCN`);
+		const NameEN = document.getElementById(`result-top${rank}-nameEN`);
+		const Similarity = document.getElementById(
+			`result-top${rank}-similarity-value`
+		);
+		const image = document.getElementById(`result-top${rank}-image`);
+
+		if (NameCN) NameCN.innerText = "？？？";
+		if (NameEN) NameEN.innerText = "？？？";
+		if (Similarity) Similarity.innerText = "??%";
+		if (image) image.src = `../images/chr/satsuki_rin_unknown.png`;
+	}
+}
+
+// 隐藏 Top5 的辅助函数
+function hideTop5Results() {
+	for (let rank = 1; rank <= 5; rank++) {
+		const NameCN = document.getElementById(`result-top${rank}-nameCN`);
+		const NameEN = document.getElementById(`result-top${rank}-nameEN`);
+		const Similarity = document.getElementById(
+			`result-top${rank}-similarity-value`
+		);
+		const image = document.getElementById(`result-top${rank}-image`);
+
+		if (NameCN) NameCN.innerText = "？？？";
+		if (NameEN) NameEN.innerText = "？？？";
+		if (Similarity) Similarity.innerText = "??%";
+		// (使用 truth.jpg)
+		if (image) image.src = `../images/others/truth.jpg`;
+	}
+}
+
 // 画布更新
 function updateImage(imageObj) {
 	// 1. 检查传入的 imageObj 是否有效（避免空值或缺少 base64 数据），若无效直接退出函数
-	if (!imageObj || !imageObj.base64) return;
+	if (!imageObj) return;
+
+	// 处理空 base64 (来自后端的 clear_canvas)
+	if (!imageObj.base64 || imageObj.base64.length < 10) {
+		imageDisplay.src = "../images/others/empty-canvas.png";
+		return;
+	}
 
 	// 2.转换数据为浏览器可识别的 data URL 格式
 	const src = `data:${imageObj.type};base64,${imageObj.base64}`;
@@ -296,9 +365,17 @@ function updateImage(imageObj) {
         ]
     }
 */
-function updateTop5(results) {
+function updateTop5(results, forceShow = false) {
 	// 参数验证：确保传入的 results 是一个数组，否则直接结束函数运行
 	if (!Array.isArray(results)) return;
+
+	if (currentTimerValue <= 30 && !forceShow) {
+		// (我们依赖后端的门控广播
+		//  和 updateTimer 中的 hideTop5Results())
+		// (这个函数现在不应该被调用，但作为保险)
+		console.warn("updateTop5 在 <= 30s 时被调用，已忽略。");
+		return;
+	}
 
 	// 定义格式化名称的函数
 	function formatName(label) {
@@ -324,23 +401,15 @@ function updateTop5(results) {
 		);
 		const image = document.getElementById(`result-top${rank}-image`);
 
-		if (currentTimerValue <= 30 && currentTimerValue > 0) {
-			// 如果定时器小于等于30秒，隐藏结果
-			// 改变元素内容
-			NameCN.innerText = "？？？"; // 设置中文名为未知
-			NameEN.innerText = "？？？"; // 设置英文名为未知
-			Similarity.innerText = "??%"; // 设置相似度为未知
-			image.src = `../images/others/truth.jpg`; // 设置图片路径为渡里妮娜。“此乃真实！！”
-		} else {
-			// 改变元素内容
-			if (NameCN !== null && NameCN !== undefined) {
-				// 设置中文名，使用nameTranslate函数，额外加了个条件判断原始英文名在数据库里，一般用不到
-				NameCN.innerHTML = nameTranslate(item.label);
-			}
-			NameEN.innerText = formatName(item.label); // 设置英文名，通过formatName函数把下划线转空格，并首字母大写
-			Similarity.innerText = `${(item.score * 100).toFixed(1)}%`; // 设置相似度，保留一位小数并添加百分号
-			image.src = `../images/chr/${item.label}_small.png`; // 设置图片路径
+		// 改变元素内容
+		if (NameCN !== null && NameCN !== undefined) {
+			// 设置中文名，使用nameTranslate函数，额外加了个条件判断原始英文名在数据库里，一般用不到
+			NameCN.innerHTML = nameTranslate(item.label);
 		}
+		if (NameEN) NameEN.innerText = formatName(item.label); // 设置英文名，通过formatName函数把下划线转空格，并首字母大写
+		if (Similarity)
+			Similarity.innerText = `${(item.score * 100).toFixed(1)}%`; // 设置相似度，保留一位小数并添加百分号
+		if (image) image.src = `../images/chr/${item.label}_small.png`; // 设置图片路径
 	});
 }
 

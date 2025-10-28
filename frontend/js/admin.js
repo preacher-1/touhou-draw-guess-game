@@ -7,8 +7,22 @@
 	const wsStatus = document.getElementById("ws-status");
 	const timerDisplay = document.getElementById("timer-display");
 	const gameStatus = document.getElementById("game-status");
-	const resetBtn = document.getElementById("reset-timer-btn");
-	const startBtn = document.getElementById("start-timer-btn");
+	const resetBtn = document.getElementById("reset-timer-btn"); // 重置计时
+	const startBtn = document.getElementById("start-timer-btn"); // 开始计时
+
+	const nextRoundBtn = document.getElementById("next-round-btn"); // 下一轮
+	const nextTryBtn = document.getElementById("next-try-btn"); // 第二次尝试
+	const revealBtn = document.getElementById("reveal-results-btn"); // 显示结果
+
+	// 按钮状态设置辅助函数，注意变量值为disabled
+	function setAllButtons(disabled) {
+		resetBtn.disabled = disabled;
+		startBtn.disabled = disabled;
+		nextRoundBtn.disabled = disabled;
+		revealBtn.disabled = disabled;
+		nextTryBtn.disabled = disabled;
+	}
+	setAllButtons(true); // 默认禁用，等待 WS 同步
 
 	// --- 2. WebSocket 核心 ---
 	let ws = null;
@@ -70,8 +84,7 @@
 				updateTimer(data);
 				break;
 			case "game_state_update":
-				// (R4) 我们将在未来实现
-				// gameStatus.textContent = `${data.phase}`;
+				updateGameState(data.payload);
 				break;
 			case "top5":
 			case "image":
@@ -105,6 +118,66 @@
 		}
 	}
 
+	function updateGameState(state) {
+		console.log("🔄 [AdminWS] 状态更新:", state);
+		const phaseMap = {
+			IDLE: "空闲",
+			WAITING: "等待开始",
+			DRAWING: "绘画中",
+			REVEAL_WAITING: "等待揭晓",
+		};
+
+		if (state.round === 0) {
+			gameStatus.textContent = "游戏未开始";
+			nextRoundBtn.textContent = "开始第一轮";
+		} else {
+			gameStatus.textContent = `第 ${state.round} 轮 (第 ${
+				state.try_num
+			} 次尝试) - ${phaseMap[state.phase] || state.phase}`;
+			nextRoundBtn.textContent = "开始下一轮";
+		}
+
+		// 根据状态启用/禁用按钮
+		// IDLE 状态：只允许“下一轮”
+		if (state.phase === "IDLE") {
+			setAllButtons(true);
+			nextRoundBtn.disabled = false;
+		}
+		// WAITING 状态：允许开始、重置、下一轮
+		else if (state.phase === "WAITING") {
+			setAllButtons(false);
+			revealBtn.disabled = true; // WAITING 时不能揭晓
+			nextTryBtn.disabled = true; // WAITING 时不能点“第 2 次尝试”
+			// nextTryBtn.style.display = "none";
+		}
+		// DRAWING 状态：只允许“重置”(用于中止)
+		else if (state.phase === "DRAWING") {
+			setAllButtons(true);
+			resetBtn.disabled = false;
+		}
+		// REVEAL_WAITING 状态：允许揭晓、下一轮、第 2 次尝试
+		else if (state.phase === "REVEAL_WAITING") {
+			setAllButtons(true);
+			nextRoundBtn.disabled = false;
+			revealBtn.disabled = false;
+
+			// “第 2 次尝试”要特判
+			if (state.try_num === 1) {
+				nextTryBtn.disabled = false;
+				// nextTryBtn.style.display = "inline-block";
+			} else {
+				nextTryBtn.disabled = true;
+			}
+		}
+
+		// 下一轮按钮文本特判
+		if (state.round === 0) {
+			nextRoundBtn.textContent = "开始第一轮";
+		} else {
+			nextRoundBtn.textContent = "开始下一轮";
+		}
+	}
+
 	// --- 5. 事件监听 ---
 	resetBtn.addEventListener("click", () => {
 		console.log("➡️ [AdminWS] 发送: 重置计时器");
@@ -130,6 +203,36 @@
 				// duration: duration
 				// (我们暂时使用后端 的默认值,
 				//  所以 payload 暂时不需要 duration)
+			},
+		});
+	});
+
+	nextRoundBtn.addEventListener("click", () => {
+		console.log("➡️ [AdminWS] 发送: 开始下一轮/尝试");
+		sendMessage({
+			type: "command",
+			payload: {
+				action: "START_NEXT_ROUND",
+			},
+		});
+	});
+
+	nextTryBtn.addEventListener("click", () => {
+		console.log("➡️ [AdminWS] 发送: 开始第 2 次尝试");
+		sendMessage({
+			type: "command",
+			payload: {
+				action: "START_NEXT_TRY", // (新 action)
+			},
+		});
+	});
+
+	revealBtn.addEventListener("click", () => {
+		console.log("➡️ [AdminWS] 发送: 揭晓结果");
+		sendMessage({
+			type: "command",
+			payload: {
+				action: "REVEAL_RESULTS",
 			},
 		});
 	});
