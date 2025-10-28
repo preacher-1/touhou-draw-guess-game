@@ -255,10 +255,10 @@ function updateImage(imageObj) {
     if (!imageObj || !imageObj.base64) return;
 
     // 2.转换数据为浏览器可识别的 data URL 格式
-    const src = `data:${imageObj.type};base64,${imageObj.base64}`;  
+    const src = `data:${imageObj.type};base64,${imageObj.base64}`;
 
     // 3. 构建展示画布的 data URL，并将其赋值给 imageDisplay 元素的 src 属性，从而更新显示的图片
-    imageDisplay.src = src;     
+    imageDisplay.src = src;
 }
 
 /* top5数据更新函数，最难懂的一集
@@ -295,14 +295,14 @@ function updateTop5(results) {
 
     // 定义results容器
     const results = jsonData.results;
-    
+
     // 定义格式化名称的函数
     function formatName(label) {
         return label
             .replace(/_/g, ' ') // 下划线替换为空格
             .replace(/\b\w/g, c => c.toUpperCase()); // 每个单词首字母大写
     }
-    
+
     // 定义英文名转变为中文名的函数
     function nameTranslate(name) {
             return nameDataCN[name] || "未知人物";

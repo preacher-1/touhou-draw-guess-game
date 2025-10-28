@@ -16,7 +16,7 @@
         background-color: rgba(107, 185, 44, 0);         /* 透明背景，调试时可视化容器用 */
         justify-content: center;
         align-items: center;
-        margin-top: 8vh; 
+        margin-top: 8vh;
     }
 
     .canvas-container {
@@ -83,7 +83,7 @@
     }
 
     .text-top-title{
-        width: 5vw; 
-        position: relative; 
+        width: 5vw;
+        position: relative;
         left: 0.5vw;
     }
