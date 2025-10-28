@@ -1,9 +1,11 @@
 import base64
 import json
+import re
 
 from fastapi import APIRouter, WebSocket
 
 from app.models import PredictionResult
+from app.core.state import canvas_state
 
 router = APIRouter()
 
@@ -17,34 +19,50 @@ async def register_listener(websocket: WebSocket):
 
     try:
         while True:
-            msg = await websocket.receive()
-            if msg.get('type', '') == 'websocket.disconnect':
-                break
+            data = await websocket.receive_json()
+            # 处理来自 canvas.html 的画布更新
+            if data.get("type") == "canvas_update":
+                data_url = data.get("data_url")
+                if not data_url:
+                    continue
+
+                # 1. 更新全局状态
+                canvas_state.set_latest_canvas(data_url)
+
+                # 2. 解析并广播给 show.html
+                img_bytes = canvas_state.get_latest_canvas_bytes()
+                img_type = canvas_state.get_latest_canvas_type()
+
+                if img_bytes and img_type:
+                    # 3. 广播给 show.html
+                    await on_image_updated(img_bytes, img_type)
+    except Exception:
+        pass
     finally:
         active_listeners.remove(websocket)
 
 
 async def on_image_updated(staged_image_bytes: bytes, staged_image_type: str):
-    await on_boardcast({
-        "type": "image",
-        "image": {
-            "type": staged_image_type,
-            "base64": base64.b64encode(staged_image_bytes).decode("utf-8"),
+    await on_boardcast(
+        {
+            "type": "image",
+            "image": {
+                "type": staged_image_type,
+                "base64": base64.b64encode(staged_image_bytes).decode("utf-8"),
+            },
         }
-    })
+    )
 
 
 async def on_predict_updated(staged_top5: list[PredictionResult]):
-    await on_boardcast({
-        "type": "top5",
-        "results": [
-            {
-                "label": result.label,
-                "score": result.score
-            }
-            for result in staged_top5
-        ]
-    })
+    await on_boardcast(
+        {
+            "type": "top5",
+            "results": [
+                {"label": result.label, "score": result.score} for result in staged_top5
+            ],
+        }
+    )
 
 
 async def on_boardcast(params: dict):

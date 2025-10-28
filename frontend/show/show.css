@@ -1,15 +1,22 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+} /* 重置默认边距，避免浏览器差异 */
 
-    * {
-        margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-    }    /* 重置默认边距，避免浏览器差异 */
+body {
+	background-color: #eef5d4;
+	line-height: 1.25;
+	font-family: "" Source Han Serif CN ", " Noto Serif SC "", serif;
+}
 
-    body {
-        background-color: #EEF5D4;
-        line-height: 1.25;
-        font-family: ''Source Han Serif CN', 'Noto Serif SC'', serif;
-    }
+#main-content {
+	width: 100vw;
+	background-color: rgba(107, 185, 44, 0); /* 透明背景，调试时可视化容器用 */
+	justify-content: center;
+	align-items: center;
+	margin-top: 8vh;
+}
 
     #main-content {
         width: 100vw;
@@ -28,16 +35,15 @@
         margin-right: 2vw;
     }
 
-    #timer {
-        position: absolute;
-        left: 1.2vw;
-        top: 1.5vw;
-        transform: translateX(0%);    /* 定位左侧 */
-        z-index: 1;    /* 确保计时器在画布上方显示 */
-        font-size: 1.5vw;
-        font-weight: 600;
-        font-family: 'Nunito', sans-serif;
-    }
+#canvas {
+	width: 48vw;
+	height: 36vw;
+	background-color: rgb(0, 0, 0);
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	/* opacity: 0.5; */
+}
 
     #canvas {
         width: 48vw;
@@ -59,23 +65,25 @@
         padding: 0.5vh 1vw 0.5vh 1vw;
     }
 
-    .result > div {         /* 调整结果显示区的排列间距 */
-        margin-bottom: 1vh;
-    }
+#result-top2,
+#result-top4 {
+	min-width: 18vw; /* 调整Top2和Top4的宽度，使Top3和Top5对齐 */
+}
 
     #result-top2, #result-top3, #result-top4, #result-top5{
         max-width: 17vw;
         min-width: 17vw;      /* 调整Top2和Top4的宽度，使Top3和Top5对齐 */
     }
 
-    .result-nameCN {
-        font-size: 1.5vw;
-        /* font-weight: bold; */
-    }
+.result-nameEN,
+.result-similarity {
+	font-size: 1vw;
+}
 
-    .result-nameEN, .result-similarity {
-        font-size: 1vw;
-    }
+.result-nameEN {
+	/* font-family: 'Microsoft YaHei', sans-serif; */
+	font-style: italic;
+}
 
     .result-nameEN {
         /* font-family: 'Microsoft YaHei', sans-serif; */

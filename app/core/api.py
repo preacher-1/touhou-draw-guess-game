@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 import time
@@ -7,18 +6,28 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 import onnxruntime
-from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
-                     Response, UploadFile)
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    Response,
+    UploadFile,
+)
 
 from app.core.config import MODEL_PATH, PREDICT_INTERVAL, TIMER_MAX_VALUE
-from app.core.websocket import (on_boardcast, on_image_updated,
-                                on_predict_updated)
+from app.core.state import canvas_state
+from app.core.websocket import on_boardcast, on_predict_updated
 from app.models import BaseResponse, PredictionResponse, PredictionResult
 from app.utils.fix_job_time import fix_job_time
-from app.utils.image_processing import (format_results, postprocess_output,
-                                        preprocess_image)
+from app.utils.image_processing import (
+    format_results,
+    postprocess_output,
+    preprocess_image,
+)
 
-log = logging.getLogger('uvicorn')
+log = logging.getLogger("uvicorn")
 
 
 @asynccontextmanager
@@ -46,32 +55,6 @@ router = APIRouter(lifespan=lifespan)
 
 # region 更新图片
 
-def check_is_image(file: UploadFile = File(...)):
-    if file.content_type not in ["image/jpeg", "image/png"]:
-        raise HTTPException(status_code=400, detail="File must be a JPEG or PNG image")
-    return file
-
-
-staged_image_bytes: bytes | None = None
-staged_image_type: str | None = None
-
-
-@router.post(
-    "/update_image",
-    response_model=BaseResponse,
-    responses={
-        400: dict(description="File must be a JPEG or PNG image")
-    },
-    summary="更新暂存的图片文件",
-    description="更新图片并转发给所有监听客户端\n\n不会立刻进行分类推理计算，分类推理计算会按照后端固定的间隔进行"
-)
-async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
-    global staged_image_bytes, staged_image_type
-    staged_image_bytes = await file.read()
-    staged_image_type = file.content_type
-    asyncio.create_task(on_image_updated(staged_image_bytes, staged_image_type))
-    return BaseResponse()
-
 
 @router.get(
     "/get_image",
@@ -84,22 +67,27 @@ async def update_image(file: Annotated[UploadFile, Depends(check_is_image)]):
                 "image/jpeg": {},
             },
         },
-        404: dict(description="No staged image ready yet")
+        404: dict(description="No staged image ready yet"),
     },
     summary="获取当前暂存的图像",
-    description="推荐使用 `/ws/listener` 监听 `type: \"image\"` 避免反复轮询"
+    description='推荐使用 `/ws/listener` 监听 `type: "image"` 避免反复轮询',
 )
 async def get_image():
-    if staged_image_bytes is None:
+    image_bytes = canvas_state.get_latest_canvas_bytes()
+    image_type = canvas_state.get_latest_canvas_type()
+    if image_bytes is None:
         raise HTTPException(status_code=404, detail="No staged image ready yet")
-    return Response(content=staged_image_bytes, media_type=staged_image_type)
+    return Response(content=image_bytes, media_type=image_type)
+
 
 # endregion
 
 
 # region 定时计算暂存的图片的模型推理结果
 
-computed_bytes: bytes | None = None     # 用于判断图片是否更新，详见 do_predict_for_staged_image
+computed_bytes: bytes | None = (
+    None  # 用于判断图片是否更新，详见 do_predict_for_staged_image
+)
 staged_top5: list[PredictionResult] | None = None
 
 
@@ -115,17 +103,20 @@ async def predict_timer():
 async def do_predict_for_staged_image():
     global staged_top5, computed_bytes
 
+    current_image_bytes = canvas_state.get_latest_canvas_bytes()
+
     # 如果没有暂存的图片，则不处理
-    if staged_image_bytes is None:
+    if current_image_bytes is None:
         return
-    # 如果暂存的图片没有更新，则不处理
-    if computed_bytes is not None and computed_bytes is staged_image_bytes:
+    # 如果暂存的图片没有更新 (与上次计算的 bytes 相同)，则不处理
+    if computed_bytes is not None and computed_bytes is current_image_bytes:
         return
 
-    model_output = await run_inference(staged_image_bytes)
+    model_output = await run_inference(current_image_bytes)
     staged_top5 = postprocess_output(model_output, top_k=5)
-    computed_bytes = staged_image_bytes
-    log.info(f'当前推理结果：{format_results(staged_top5)}')
+    computed_bytes = current_image_bytes  # 更新本地缓存，防止重复计算
+
+    log.info(f"当前推理结果：{format_results(staged_top5)}")
 
     asyncio.create_task(on_predict_updated(staged_top5))
 
@@ -146,19 +137,19 @@ async def run_inference(image_bytes: bytes):
         # print(f"An error occurred during inference: {e}")
         raise HTTPException(status_code=500, detail=f"Inference error: {e}")
 
+
 # endregion
 
 
 # region 获取分类推理结果相关的 API
 
+
 @router.get(
     "/top1",
     response_model=PredictionResponse,
-    responses={
-        404: dict(description="No staged result ready yet")
-    },
+    responses={404: dict(description="No staged result ready yet")},
     summary="得到 Top-1 的结果",
-    description="推荐使用 `/ws/listener` 监听 `type: \"top5\"` 避免反复轮询"
+    description='推荐使用 `/ws/listener` 监听 `type: "top5"` 避免反复轮询',
 )
 async def predict_top1():
     """
@@ -172,11 +163,9 @@ async def predict_top1():
 @router.get(
     "/top5",
     response_model=PredictionResponse,
-    responses={
-        404: dict(description="No staged result ready yet")
-    },
+    responses={404: dict(description="No staged result ready yet")},
     summary="得到 Top-5 的结果",
-    description="推荐使用 `/ws/listener` 监听 `type: \"top5\"` 避免反复轮询"
+    description='推荐使用 `/ws/listener` 监听 `type: "top5"` 避免反复轮询',
 )
 async def predict_top5():
     """
@@ -185,6 +174,7 @@ async def predict_top5():
     if staged_top5 is None:
         raise HTTPException(status_code=404, detail="No staged result ready yet")
     return PredictionResponse(results=staged_top5)
+
 
 # endregion
 
@@ -203,11 +193,9 @@ async def game_timer_task():
             async with fix_job_time(1):
                 if reset_event.is_set():
                     break
-                await on_boardcast({
-                    "type": "timer",
-                    "value": remaining,
-                    "by": "countdown"
-                })
+                await on_boardcast(
+                    {"type": "timer", "value": remaining, "by": "countdown"}
+                )
         else:
             await reset_event.wait()
 
@@ -216,7 +204,7 @@ async def game_timer_task():
     "/reset_timer",
     response_model=BaseResponse,
     summary="重置定时器",
-    description=f"将定时器重置并暂停，会广播 `{{\"type\": \"timer\", \"value\": {TIMER_MAX_VALUE}, \"by\": \"reset\"}}` 给所有监听客户端"
+    description=f'将定时器重置并暂停，会广播 `{{"type": "timer", "value": {TIMER_MAX_VALUE}, "by": "reset"}}` 给所有监听客户端',
 )
 async def reset_game_timer():
     """
@@ -224,11 +212,9 @@ async def reset_game_timer():
     """
     reset_event.set()
     start_event.clear()
-    asyncio.create_task(on_boardcast({
-        "type": "timer",
-        "value": TIMER_MAX_VALUE,
-        "by": "reset"
-    }))
+    asyncio.create_task(
+        on_boardcast({"type": "timer", "value": TIMER_MAX_VALUE, "by": "reset"})
+    )
     return BaseResponse()
 
 
@@ -236,7 +222,7 @@ async def reset_game_timer():
     "/start_timer",
     response_model=BaseResponse,
     summary="启动定时器",
-    description="启动定时器，会每隔一秒钟广播 `{\"type\": \"timer\", \"value\": (剩余时间), \"by\": \"countdown\"}` 给所有监听客户端"
+    description='启动定时器，会每隔一秒钟广播 `{"type": "timer", "value": (剩余时间), "by": "countdown"}` 给所有监听客户端',
 )
 async def start_game_timer():
     """
@@ -250,11 +236,9 @@ async def start_game_timer():
 @router.post(
     "/boardcast",
     response_model=BaseResponse,
-    responses={
-        400: dict(description="Missing required field: 'type'")
-    },
+    responses={400: dict(description="Missing required field: 'type'")},
     summary="向所有监听客户端广播提供的参数",
-    description="需要带有 `type` 字段，以便客户端区分消息类型"
+    description="需要带有 `type` 字段，以便客户端区分消息类型",
 )
 async def boardcast(params: dict):
     """
@@ -264,5 +248,6 @@ async def boardcast(params: dict):
         raise HTTPException(status_code=400, detail="Missing required field: 'type'")
     asyncio.create_task(on_boardcast(params))
     return BaseResponse()
+
 
 # endregion

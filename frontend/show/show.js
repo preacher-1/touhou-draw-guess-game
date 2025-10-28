@@ -1,8 +1,10 @@
 // ChatGPT写的
 // 抓取数据环节
-const ws = new WebSocket(`ws://${location.host}/ws/listener`);       // 初始定义websocket链接？
-const imageDisplay = document.getElementById("canvas");       // 获取展示画布的元素canvas
-const timerDisplay = document.getElementById("timer");                  // 获取定时器的元素timer
+const ws = new WebSocket(`ws://${location.host}/ws/listener`); // 初始定义websocket链接？
+const imageDisplay = document.getElementById("canvas"); // 获取展示画布的元素canvas
+const timerDisplay = document.getElementById("timer"); // 获取定时器的元素timer
+
+let currentTimerValue = 90; // 定义一个全局变量来存储当前的定时器值
 
 const nameDataCN = {    //中文名数据库
 	"aki_minoriko": "秋穰子",
@@ -161,40 +163,38 @@ const nameDataCN = {    //中文名数据库
 	"zun": "zun"
 }
 
+ws.onmessage = (event) => {
+	// 接收事件发生？
+	try {
+		const data = JSON.parse(event.data); // 解析接收的数据，转化为js格式的字符串
+		console.log("📩 收到消息:", data);
 
-ws.onopen = () => {
-    console.log("✅ WebSocket 已连接");
-};       // 声明连接成功
-
-ws.onmessage = (event) => {      // 接收事件发生？
-    try {
-    const data = JSON.parse(event.data);     // 解析接收的数据，转化为js格式的字符串
-    console.log("📩 收到消息:", data);
-
-    switch (data.type) {        // switch语句，根据不同的type类型，调用不同的更新函数
-        case "image":
-            updateImage(data.image);        // 若是图片，执行图片更新函数
-            break;      // 跳出switch语句
-        case "top5":
-            updateTop5(data.results);
-            break;
-        case "timer":
-            updateTimer(data);
-            break;
-        // 若上述全不匹配，执行默认逻辑
-        default:
-            console.log("⚙️ 其它类型消息:", data);
-            break;
-    }
-    // 若上面try失败，则启动catch，捕获解析错误
-    } catch (err) {
-    console.error("❌ JSON 解析错误:", err, event.data);
-    }
+		switch (
+			data.type // switch语句，根据不同的type类型，调用不同的更新函数
+		) {
+			case "image":
+				updateImage(data.image); // 若是图片，执行图片更新函数
+				break; // 跳出switch语句
+			case "top5":
+				updateTop5(data.results);
+				break;
+			case "timer":
+				updateTimer(data);
+				break;
+			// 若上述全不匹配，执行默认逻辑
+			default:
+				console.log("⚙️ 其它类型消息:", data);
+				break;
+		}
+		// 若上面try失败，则启动catch，捕获解析错误
+	} catch (err) {
+		console.error("❌ JSON 解析错误:", err, event.data);
+	}
 };
 
 ws.onclose = () => {
-    console.warn("🔌 WebSocket 已断开，尝试重连...");
-    setTimeout(() => location.reload(), 2000);
+	console.warn("🔌 WebSocket 已断开，尝试重连...");
+	setTimeout(() => location.reload(), 2000);
 };
 
 // === 各类更新函数 ===
@@ -226,6 +226,11 @@ function updateTimer(timerData) {
             image.src = `../images/chr/satsuki_rin_unknown.png`; // 设置图片路径为冴月麟的剪影，没有原因，因为我喜欢这么做）
         }
 
+	// 2. 判断 timerData.by 的操作类型
+	// 如果是 "reset"（重置操作），显示重置信息，并设置蓝色文字，同时重置识别结果
+	if (timerData.by === "reset") {
+		timerDisplay.textContent = `⏱ 定时器重置：${value}s`;
+		timerDisplay.style.color = "#0066cc";
 
     // 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
     } else if (timerData.by === "countdown") {
@@ -242,14 +247,50 @@ function updateTimer(timerData) {
         }
         timerDisplay.textContent = `⏳${timerDataMinute}:${timerDataSecond}`;
 
-    // 其他情况（未指定操作类型），仅显示时间
-    } else {
-        timerDisplay.textContent = `⏳${value}s`;
-    }
+		// 重置识别结果
+		for (let rank = 1; rank <= 5; rank++) {
+			// 抓取前端的元素
+			const NameCN = document.getElementById(`result-top${rank}-nameCN`);
+			const NameEN = document.getElementById(`result-top${rank}-nameEN`);
+			const Similarity = document.getElementById(
+				`result-top${rank}-similarity-value`
+			);
+			const image = document.getElementById(`result-top${rank}-image`);
+
+			// 改变元素内容
+			NameCN.innerText = "？？？"; // 设置中文名为未知
+			NameEN.innerText = "？？？"; // 设置英文名为未知
+			Similarity.innerText = "??%"; // 设置相似度为未知
+			image.src = `../images/chr/satsuki_rin_unknown.png`; // 设置图片路径为冴月麟的剪影，没有原因，因为我喜欢这么做）
+		}
+
+		// 如果是 "countdown"（倒计时操作），显示剩余时间，并根据时间设置文字颜色
+	} else if (timerData.by === "countdown") {
+		currentTimerValue = timerData.value;
+
+		let timerDataMinute = Math.floor(timerData.value / 60);
+		let timerDataSecond = timerData.value % 60;
+		// 格式化为两位数（补零）
+		const timerDataMinuteStr = String(timerDataMinute).padStart(2, "0");
+		const timerDataSecondStr = String(timerDataSecond).padStart(2, "0");
+		// 根据剩余时间量判断文本颜色
+		if (timerData.value <= 30) {
+			timerDisplay.style.color = "red";
+		} else {
+			timerDisplay.style.color = "black";
+		}
+		timerDisplay.textContent = `⏳${timerDataMinuteStr}:${timerDataSecondStr}`;
+
+		// 其他情况（未指定操作类型），仅显示时间
+	} else {
+		timerDisplay.textContent = `⏳${value}s`;
+	}
 }
 
 // 画布更新
 function updateImage(imageObj) {
+	// 1. 检查传入的 imageObj 是否有效（避免空值或缺少 base64 数据），若无效直接退出函数
+	if (!imageObj || !imageObj.base64) return;
 
     // 1. 检查传入的 imageObj 是否有效（避免空值或缺少 base64 数据），若无效直接退出函数
     if (!imageObj || !imageObj.base64) return;
@@ -334,7 +375,29 @@ function updateTop5(results) {
             image.src = `../images/chr/${item.label}_small.png`; // 设置图片路径
         }
 
-    });
+		// 抓取前端的元素
+		const NameCN = document.getElementById(`result-top${rank}-nameCN`);
+		const NameEN = document.getElementById(`result-top${rank}-nameEN`);
+		const Similarity = document.getElementById(
+			`result-top${rank}-similarity-value`
+		);
+		const image = document.getElementById(`result-top${rank}-image`);
+
+		if (currentTimerValue <= 30) {
+			// 如果定时器小于等于30秒，隐藏结果
+			// 改变元素内容
+			NameCN.innerText = "？？？"; // 设置中文名为未知
+			NameEN.innerText = "？？？"; // 设置英文名为未知
+			Similarity.innerText = "??%"; // 设置相似度为未知
+			image.src = `../images/chr/truth`; // 设置图片路径为渡里妮娜。“此乃真实！！”
+		} else {
+			// 改变元素内容
+			NameCN.innerText = "？？？"; // 设置中文名，暂时无法实现
+			NameEN.innerText = formatName(item.label); // 设置英文名，通过函数把下划线转空格，并首字母大写
+			Similarity.innerText = `${(item.score * 100).toFixed(1)}%`; // 设置相似度，保留一位小数并添加百分号
+			image.src = `../images/chr/${item.label}_small.png`; // 设置图片路径
+		}
+	});
 }
 
 /*

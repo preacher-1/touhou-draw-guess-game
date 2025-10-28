@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>画布 - Touhou Draw & Guess</title>
+		<link rel="stylesheet" href="/static/css/canvas.css" />
+		<!-- fabric.js from CDN -->
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"
+			integrity=""
+			crossorigin="anonymous"
+		></script>
+	</head>
+	<body>
+		<div class="header">画布页面（Canvas）</div>
+		<div class="container">
+			<div class="toolbar">
+				<div class="group">
+					<label>轮次</label>
+					<input id="round-input" type="number" value="1" min="1" />
+				</div>
+
+				<div class="group">
+					<label>笔刷大小</label>
+					<div class="brush-size-container">
+						<input
+							id="brush-size"
+							type="range"
+							min="1"
+							max="60"
+							value="6"
+						/>
+						<div class="brush-preview" id="brush-preview">
+							<div class="brush-dot" id="brush-preview-dot"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="group">
+					<label>颜色</label>
+					<div class="color-picker">
+						<!-- 预设常用颜色 -->
+						<div
+							class="color-swatch"
+							data-color="#000000"
+							style="background-color: #000000"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#FFFFFF"
+							style="background-color: #ffffff"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#FF0000"
+							style="background-color: #ff0000"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#00FF00"
+							style="background-color: #00ff00"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#0000FF"
+							style="background-color: #0000ff"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#FFFF00"
+							style="background-color: #ffff00"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#FF00FF"
+							style="background-color: #ff00ff"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#00FFFF"
+							style="background-color: #00ffff"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#FFA500"
+							style="background-color: #ffa500"
+						></div>
+						<div
+							class="color-swatch"
+							data-color="#A020F0"
+							style="background-color: #a020f0"
+						></div>
+					</div>
+					<input id="brush-color" type="color" value="#000000" />
+				</div>
+
+				<div class="group">
+					<button class="button" id="undo-btn">撤销</button>
+					<button class="button" id="redo-btn">重做</button>
+					<button class="button secondary" id="reset-btn">
+						重置
+					</button>
+				</div>
+
+				<div class="group">
+					<button class="button" id="eraser-btn">橡皮</button>
+					<button class="button" id="fill-btn">油漆桶</button>
+					<button class="button" id="download-btn">保存</button>
+				</div>
+
+				<div class="group status" id="status-area">状态：未连接</div>
+
+				<div class="history-panel">
+					<h3>历史记录</h3>
+					<div class="history-list" id="history-list">
+						<!-- 历史记录项会动态添加到这里 -->
+					</div>
+				</div>
+			</div>
+
+			<div class="canvas-area">
+				<canvas id="main-canvas" width="800" height="600"></canvas>
+			</div>
+		</div>
+
+		<script src="/static/js/canvas.app.js"></script>
+
+		<script src="/static/js/canvas.config.js"></script>
+		<script src="/static/js/canvas.utils.js"></script>
+
+		<script src="/static/js/canvas.websocket.js"></script>
+		<script src="/static/js/canvas.ui.js"></script>
+		<script src="/static/js/canvas.upload.js"></script>
+		<script src="/static/js/canvas.history.js"></script>
+
+		<script src="/static/js/canvas.fabric.js"></script>
+
+		<script>
+			window.canvasModuleInit && window.canvasModuleInit();
+		</script>
+	</body>
+</html>

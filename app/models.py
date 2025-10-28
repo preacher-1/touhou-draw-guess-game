@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 
 
@@ -6,6 +5,7 @@ class BaseResponse(BaseModel):
     """
     基础 API 返回结构，只带有是否成功
     """
+
     success: bool = True
 
 
@@ -22,4 +22,5 @@ class PredictionResponse(BaseResponse):
     """
     分类推理 API 返回的完整数据结构
     """
+
     results: list[PredictionResult]
