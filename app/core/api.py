@@ -1,19 +1,14 @@
 import asyncio
 import logging
-import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from typing import Annotated
 
 import onnxruntime
 from fastapi import (
     APIRouter,
-    Depends,
     FastAPI,
-    File,
     HTTPException,
     Response,
-    UploadFile,
 )
 
 from app.core.config import MODEL_PATH, PREDICT_INTERVAL, TIMER_MAX_VALUE
@@ -85,14 +80,14 @@ async def get_image():
 
 # region 定时计算暂存的图片的模型推理结果
 
-computed_bytes: bytes | None = (
-    None  # 用于判断图片是否更新，详见 do_predict_for_staged_image
-)
+event_image_updated = asyncio.Event()
 staged_top5: list[PredictionResult] | None = None
 
 
 async def predict_timer():
     while True:
+        await event_image_updated.wait()
+        event_image_updated.clear()
         async with fix_job_time(PREDICT_INTERVAL):
             try:
                 await do_predict_for_staged_image()
@@ -101,20 +96,13 @@ async def predict_timer():
 
 
 async def do_predict_for_staged_image():
-    global staged_top5, computed_bytes
+    global staged_top5
 
     current_image_bytes = canvas_state.get_latest_canvas_bytes()
-
-    # 如果没有暂存的图片，则不处理
-    if current_image_bytes is None:
-        return
-    # 如果暂存的图片没有更新 (与上次计算的 bytes 相同)，则不处理
-    if computed_bytes is not None and computed_bytes is current_image_bytes:
-        return
+    assert current_image_bytes is not None
 
     model_output = await run_inference(current_image_bytes)
     staged_top5 = postprocess_output(model_output, top_k=5)
-    computed_bytes = current_image_bytes  # 更新本地缓存，防止重复计算
 
     log.info(f"当前推理结果：{format_results(staged_top5)}")
 
