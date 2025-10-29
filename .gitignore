@@ -1,5 +1,6 @@
 .DS_Store
-models/yolo11m-02-01-best.onnx
+/models/yolo11m-02-01-best.onnx
+/password.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

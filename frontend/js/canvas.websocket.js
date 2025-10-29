@@ -7,16 +7,20 @@
 	"use strict";
 
 	// ========= WebSocket（保留原逻辑） =========
-	App.connectWebSocket = function () {
+	App.connectWebSocket = function (password) {
 		App.socket = new WebSocket(App.config.WS_URL);
 
 		App.socket.addEventListener("open", () => {
 			console.log("[WS] connected");
+			// App.sendMessage({
+			// 	type: "hello",
+			// 	client: "canvas",
+			// 	timestamp: Date.now(),
+			// });
 			App.sendMessage({
-				type: "hello",
-				client: "canvas",
-				timestamp: Date.now(),
-			});
+				type: "auth",
+				password: password
+			})
 			App.startHeartbeat();
 			if (App.reconnectTimer) {
 				clearTimeout(App.reconnectTimer);
@@ -51,7 +55,7 @@
 		if (App.reconnectTimer) return;
 		App.reconnectTimer = setTimeout(() => {
 			console.log("[WS] attempting reconnect...");
-			App.connectWebSocket();
+			App.connectWebSocket(password);
 		}, 2000 + Math.random() * 3000);
 	};
 
@@ -78,6 +82,8 @@
 	App.handleServerMessage = function (msg) {
 		// 根据消息类型处理
 		switch (msg.type) {
+			case "auth_result":
+				App.processAuthResult(msg.success);
 			case "timer":
 				App.updateTimerUI(msg);
 				break;
@@ -95,4 +101,14 @@
 				console.log("[WS] unknown message", msg);
 		}
 	};
+
+	App.processAuthResult = function (success) {
+		if (success) {
+			alert("✅ 管理员认证成功！");
+		} else {
+			alert("❌ 管理员认证失败，密码错误！");
+			// 跳转回主界面
+			window.location.href = "/";
+		}
+	}
 })(window.CanvasApp);

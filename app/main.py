@@ -1,10 +1,9 @@
-from fastapi import FastAPI, WebSocket
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core import api, websocket
-from fastapi.responses import RedirectResponse
 
 # 创建FastAPI应用实例
 app = FastAPI(title="东方杏坛铭AI推理API", version="0.1")

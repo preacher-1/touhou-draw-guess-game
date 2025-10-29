@@ -2,11 +2,12 @@ import base64
 import json
 import logging
 
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.models import PredictionResult
-from app.core.state import canvas_state
 import app.core.game_logic as game_logic
+from app.core.state import canvas_state
+from app.models import PredictionResult
+from app.utils.password import get_password
 
 router = APIRouter()
 
@@ -34,10 +35,26 @@ async def register_listener(websocket: WebSocket):
         log.warning(f"初始状态同步失败: {e}")
 
     try:
+        auth_success = False
+
         while True:
             data = await websocket.receive_json()
-            # 处理来自 canvas.html 的画布更新
-            if data.get("type", "") == "canvas_update":
+            type = data.get("type", "")
+
+            if type == "auth":
+                # 检查是否通过验证
+                auth_success = data.get("password", "") == get_password()
+                await websocket.send_json({
+                    "type": "auth_result",
+                    "success": auth_success
+                })
+
+            # 只有通过验证才能向后端发送消息，否则只能监听
+            if not auth_success:
+                continue
+
+            if type == "canvas_update":
+                # 处理来自 canvas.html 的画布更新
                 data_url = data.get("data_url")
                 if not data_url:
                     continue
@@ -52,9 +69,11 @@ async def register_listener(websocket: WebSocket):
                 if img_bytes and img_type:
                     # 3. 广播给 show.html
                     await on_image_updated(img_bytes, img_type)
-            elif data.get("type", "") == "command":
+
+            elif type == "command":
                 # 将命令转发给游戏逻辑处理器
                 await game_logic.dispatch(data.get("payload"))
+
     except Exception:
         pass
     finally:
@@ -87,7 +106,11 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
 async def on_boardcast(params: dict):
     json_text = json.dumps(params)
     for websocket in active_listeners:
-        await websocket.send_text(json_text)
+        try:
+            await websocket.send_text(json_text)
+        except WebSocketDisconnect:
+            # 可能会有 WebSocketDisconnet，这里捕获并忽略避免影响其它功能
+            pass
 
 
 listener_description = """

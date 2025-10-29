@@ -28,7 +28,7 @@
 	// --- 2. WebSocket 核心 ---
 	let ws = null;
 
-	function connect() {
+	function connect(password) {
 		// (使用与 canvas.config.js 相同的逻辑)
 		const wsURL =
 			(window.location.protocol === "https:" ? "wss://" : "ws://") +
@@ -38,11 +38,12 @@
 		ws = new WebSocket(wsURL);
 
 		ws.onopen = () => {
-			console.log("✅ [AdminWS] WebSocket 已连接");
-			wsStatus.textContent = "🟢 已连接";
-			wsStatus.style.color = "green";
-			// 你可以发送一个 'hello' 消息
-			sendMessage({ type: "hello", client: "admin" });
+			console.log("⚠️ [AdminWS] WebSocket 未验证");
+			wsStatus.textContent = "🟠 未验证";
+			wsStatus.style.color = "orange";
+			// 发送验证请求
+			// sendMessage({ type: "hello", client: "admin" });
+			sendMessage({ type: "auth", password: password });
 		};
 
 		ws.onmessage = (event) => {
@@ -60,7 +61,7 @@
 			wsStatus.style.color = "red";
 			ws = null;
 			// 自动重连
-			setTimeout(connect, 3000 + Math.random() * 2000);
+			setTimeout(() => connect(password), 3000 + Math.random() * 2000);
 		};
 
 		ws.onerror = (err) => {
@@ -81,6 +82,8 @@
 	function handleMessage(data) {
 		console.log("📩 [AdminWS] 收到消息:", data);
 		switch (data.type) {
+			case "auth_result":
+				processAuthResult(data.success);
 			case "timer":
 				updateTimer(data);
 				break;
@@ -95,6 +98,23 @@
 				break;
 			default:
 				console.log("⚙️ [AdminWS] 其它类型消息:", data);
+		}
+	}
+
+	function processAuthResult(success) {
+		if (success) {
+			console.log("✅ [AdminWS] WebSocket 已验证");
+			wsStatus.textContent = "🟢 已验证";
+			wsStatus.style.color = "green";
+		} else {
+			// 如果“未验证”元素还没有及时更新，会被 alert 阻塞渲染
+			// 使用 setTimeout 而不是直接执行，保证界面元素被更新
+			// 只是一个效果上的小细节，不影响实际功能
+			setTimeout(() => {
+				alert("❌ 管理员认证失败，密码错误！");
+				// 跳转回主界面
+				window.location.href = "/";
+			}, 100);
 		}
 	}
 
@@ -264,5 +284,5 @@
 	});
 
 	// --- 启动连接 ---
-	connect();
+	promptPassword("请输入管理员密码").then(connect);
 })();
