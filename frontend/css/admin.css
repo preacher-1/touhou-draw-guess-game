@@ -78,3 +78,29 @@ h1 {
 	background-color: #6c757d;
 	color: white;
 }
+
+.results-list-container {
+	background: #f9fafb;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+	padding: 12px;
+	min-height: 150px;
+}
+
+#top5-list {
+	padding-left: 20px;
+	margin: 0;
+	font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+#top5-list li {
+	font-size: 14px;
+	color: #374151;
+	margin-bottom: 8px;
+	white-space: pre;
+}
+
+#top5-list li:first-child {
+	font-weight: bold;
+	color: #111827;
+}

@@ -13,6 +13,7 @@
 	const nextRoundBtn = document.getElementById("next-round-btn"); // 下一轮
 	const nextTryBtn = document.getElementById("next-try-btn"); // 第二次尝试
 	const revealBtn = document.getElementById("reveal-results-btn"); // 显示结果
+	const top5List = document.getElementById("top5-list"); // Top 5 列表
 
 	// 按钮状态设置辅助函数，注意变量值为disabled
 	function setAllButtons(disabled) {
@@ -87,6 +88,8 @@
 				updateGameState(data.payload);
 				break;
 			case "top5":
+				updateTop5List(data.results);
+				break;
 			case "image":
 				// Admin 页面暂时不需要这些
 				break;
@@ -175,6 +178,29 @@
 			nextRoundBtn.textContent = "开始第一轮";
 		} else {
 			nextRoundBtn.textContent = "开始下一轮";
+		}
+	}
+
+	// Top5 更新函数
+	/**
+	 * @param {Array<{label: string, score: number}>} results
+	 */
+	function updateTop5List(results) {
+		if (!top5List || !Array.isArray(results)) return;
+
+		// (我们只显示 label, 未来可以考虑在 admin.js 中也加载 nameDataCN)
+		const listItems = top5List.getElementsByTagName("li");
+
+		for (let i = 0; i < listItems.length; i++) {
+			if (results[i]) {
+				const item = results[i];
+				const scorePercent = (item.score * 100)
+					.toFixed(1)
+					.padStart(4, " "); // 补齐空格
+				listItems[i].textContent = `${scorePercent}% - ${item.label}`;
+			} else {
+				listItems[i].textContent = "(n/a)";
+			}
 		}
 	}
 
