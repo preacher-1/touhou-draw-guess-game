@@ -87,7 +87,11 @@ async def on_predict_updated(staged_top5: list[PredictionResult]):
 async def on_boardcast(params: dict):
     json_text = json.dumps(params)
     for websocket in active_listeners:
-        await websocket.send_text(json_text)
+        try:
+            await websocket.send_text(json_text)
+        except WebSocketDisconnect:
+            # 可能会有 WebSocketDisconnet，这里捕获并忽略避免影响其它功能
+            pass
 
 
 listener_description = """
