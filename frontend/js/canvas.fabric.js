@@ -228,13 +228,41 @@
 		App.addHistoryLog("恢复画笔（从油漆桶）");
 	};
 
+	/**
+	 * @description 计算适合容器的 4:3 比例
+	 * @returns {{width: number, height: number}}
+	 */
+	App.calculate4x3Dimensions = function () {
+		// 容器可用空间
+		// (与 resize 监听器和 init 时的值保持一致)
+		const containerWidth = window.innerWidth - 300;
+		const containerHeight = window.innerHeight - 60;
+
+		const aspectRatio = 4 / 3;
+
+		// 检查容器是 "宽" 还是 "高"
+		if (containerWidth / containerHeight > aspectRatio) {
+			// 容器更宽（以高为准）
+			const newHeight = containerHeight;
+			const newWidth = newHeight * aspectRatio;
+			return { width: newWidth, height: newHeight };
+		} else {
+			// 容器更高（以宽为准）
+			const newWidth = containerWidth;
+			const newHeight = newWidth / aspectRatio;
+			return { width: newWidth, height: newHeight };
+		}
+	};
+
 	// ========= 初始化 Fabric.js ==========
 	App.initFabricCanvas = function () {
+		const initialDims = App.calculate4x3Dimensions();
+
 		App.fabricCanvas = new fabric.Canvas("main-canvas", {
 			isDrawingMode: true,
 			backgroundColor: "#ffffff",
-			width: window.innerWidth - 300,
-			height: window.innerHeight - 60,
+			width: initialDims.width,
+			height: initialDims.height,
 			preserveObjectStacking: true,
 		});
 
@@ -402,10 +430,21 @@
 
 		// 窗口尺寸变化时调整 canvas 大小
 		window.addEventListener("resize", function () {
-			App.fabricCanvas.setDimensions({
-				width: window.innerWidth - 300,
-				height: window.innerHeight - 60,
-			});
+			// (使用新的 4:3 计算函数)
+			const newDims = App.calculate4x3Dimensions();
+
+			// 不要使用 setDimensions！
+			// 使用 setWidth 和 setHeight 来正确更新
+			// <canvas> 元素的 width/height 属性
+			// 和 Fabric 的内部状态。
+			App.fabricCanvas.setWidth(newDims.width);
+			App.fabricCanvas.setHeight(newDims.height);
+
+			// 重新渲染所有对象（以适应新尺寸）
+			App.fabricCanvas.renderAll();
+
+			// 重新计算画布偏移量（以确保鼠标位置正确）
+			App.fabricCanvas.calcOffset();
 		});
 	};
 })(window.CanvasApp);

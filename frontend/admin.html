@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>管理控制台 - 东方杏坛铭</title>
+		<link rel="stylesheet" href="/static/css/admin.css" />
+	</head>
+	<body>
+		<div class="container">
+			<h1>管理控制台</h1>
+
+			<div class="status-panel">
+				<div class_="status-item">
+					<span>游戏状态:</span>
+					<span id="game-status">未连接</span>
+				</div>
+				<div class_="status-item">
+					<span>当前计时:</span>
+					<span id="timer-display">--:--</span>
+				</div>
+				<div class_="status-item">
+					<span>WS 状态:</span>
+					<span id="ws-status">🔴 未连接</span>
+				</div>
+			</div>
+
+			<fieldset class="control-group">
+				<legend>计时器控制</legend>
+				<button id="start-timer-btn" class="button">开始计时</button>
+				<button id="reset-timer-btn" class="button button-secondary">
+					重置计时
+				</button>
+			</fieldset>
+
+			<fieldset class="control-group">
+				<legend>游戏流程</legend>
+				<button id="next-round-btn" class="button button-primary">
+					开始第一轮
+				</button>
+				<button id="next-try-btn" class="button button-primary">
+					开始第 2 次尝试
+				</button>
+				<button id="reveal-results-btn" class="button">揭晓结果</button>
+			</fieldset>
+
+			<fieldset class="control-group">
+				<legend>实时识别结果 (Top 5)</legend>
+				<div class="results-list-container">
+					<ol id="top5-list">
+						<li>(等待数据...)</li>
+						<li>(等待数据...)</li>
+						<li>(等待数据...)</li>
+						<li>(等待数据...)</li>
+						<li>(等待数据...)</li>
+					</ol>
+				</div>
+			</fieldset>
+		</div>
+
+		<script src="/static/js/admin.js"></script>
+	</body>
+</html>
