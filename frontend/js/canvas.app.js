@@ -55,8 +55,8 @@ window.CanvasApp = {
 		App.initFabricCanvas();
 		App.initColorPickerAndTools();
 
-		App.connectWebSocket();
-
 		console.log("[系统] 画布模块初始化完成");
+
+		promptPassword("请输入管理员密码").then(App.connectWebSocket);
 	};
 })(window.CanvasApp);

@@ -11,7 +11,7 @@ from fastapi import (
     Response,
 )
 
-from app.core.config import MODEL_PATH, PREDICT_INTERVAL, TIMER_MAX_VALUE
+from app.core.config import MODEL_PATH, PREDICT_INTERVAL
 from app.core.state import canvas_state
 from app.core.websocket import on_boardcast, on_predict_updated
 from app.models import BaseResponse, PredictionResponse, PredictionResult
@@ -21,6 +21,7 @@ from app.utils.image_processing import (
     postprocess_output,
     preprocess_image,
 )
+from app.utils.password import password_exists
 import app.core.game_logic as game_logic
 
 log = logging.getLogger("uvicorn")
@@ -29,6 +30,10 @@ log = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global session, input_name
+
+    if not password_exists():
+        log.warning('未设置密码！请在根目录创建 password.txt 并写入密码文本')
+        log.warning('未设置密码将会拒绝所有需要密码验证的请求！')
 
     # 加载模型
     providers = (
