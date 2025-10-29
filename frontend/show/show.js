@@ -219,10 +219,20 @@ ws.onclose = () => {
 function updateGameState(state) {
 	const phase = state.phase;
 
+	const targetContainer = document.getElementById("target-image-container");
+	const targetImage = document.getElementById("target-image");
+
 	if (phase === "IDLE") {
 		roundTitle.textContent = "游戏已重置";
+		if (targetContainer) {
+			targetContainer.style.display = "none";
+		}
 	} else if (state.round > 0) {
-		roundTitle.textContent = `第 ${state.round} 轮 - 请画出: ${state.target_name}`;
+		roundTitle.textContent = `第 ${state.round} 轮 (第 ${state.try_num} 次尝试) - 请画出: ${state.target_name}`;
+		if (targetContainer && targetImage && state.target_label) {
+			targetImage.src = `../images/chr/${state.target_label}_small.png`;
+			targetContainer.style.display = "block";
+		}
 	}
 
 	// 当进入 WAITING 阶段时 (意味着新一轮或新尝试)
@@ -236,6 +246,11 @@ function updateGameState(state) {
 
 		// 2. 重置 Top5 列表 (复用 timer-reset 逻辑)
 		resetTop5Display();
+
+		// 3. IDLE 阶段隐藏目标图片, WAITING 阶段应确保显示
+		if (phase === "WAITING" && targetContainer) {
+			targetContainer.style.display = "block";
+		}
 	}
 }
 

@@ -38,6 +38,37 @@ body {
 	font-family: "Nunito", sans-serif;
 }
 
+/* (新代码：目标图像容器样式) */
+#target-image-container {
+	position: absolute;
+	right: 1.2vw;
+	top: 1.5vw;
+	z-index: 1;
+	width: 9vw; /* 略大于 Top2-Top5 的图像 (7vw) */
+	background: rgba(255, 255, 255, 0.6);
+	backdrop-filter: blur(4px);
+	border-radius: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 0.5vw;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+	/* 默认隐藏 */
+	display: none;
+}
+
+#target-image {
+	width: 100%;
+	border-radius: 6px;
+}
+
+#target-image-caption {
+	font-size: 0.9vw;
+	text-align: center;
+	color: #333;
+	font-weight: 600;
+	margin-top: 0.3vw;
+}
+
 #canvas {
 	width: 48vw;
 	background-color: rgb(0, 0, 0);
