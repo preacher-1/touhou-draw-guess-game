@@ -9,13 +9,6 @@
 
 	// ========= UI 辅助函数 ==========
 
-	App.getRoundInputValue = function () {
-		const el = document.getElementById("round-input");
-		if (!el) return 1;
-		const v = parseInt(el.value, 10);
-		return isNaN(v) ? 1 : v;
-	};
-
 	// UI：颜色 swatch 的 active 同步
 	App.updateColorSwatchUI = function (color) {
 		const swatches = document.querySelectorAll(".color-swatch");
@@ -216,6 +209,180 @@
 
 			// 初始化预览
 			updateBrushSize(parseInt(sizeRange.value, 10));
+		}
+
+		// /**
+		//  * 启用或禁用整个工具栏
+		//  * @param {boolean} enabled
+		//  */
+		// App.setToolbarEnabled = function (enabled) {
+		// 	const toolbar = document.querySelector(".toolbar");
+		// 	if (!toolbar) return;
+
+		// 	if (enabled) {
+		// 		toolbar.classList.remove("toolbar-disabled");
+		// 	} else {
+		// 		toolbar.classList.add("toolbar-disabled");
+		// 	}
+		// };
+
+		// /**
+		//  * (由 websocket.js 调用) 更新计时器 UI
+		//  * @param {object} msg - { type: "timer", value: number, by: string }
+		//  */
+		// App.updateTimerUI = function (msg) {
+		// 	const timerDisplay = document.getElementById("timer-display");
+		// 	if (!timerDisplay) return;
+
+		// 	const value = msg.value ?? "?";
+
+		// 	if (msg.by === "reset") {
+		// 		timerDisplay.textContent = `计时器已重置 (${value}s)`;
+		// 		timerDisplay.classList.remove("low-time");
+		// 	} else if (msg.by === "countdown") {
+		// 		const minutes = String(Math.floor(value / 60)).padStart(2, "0");
+		// 		const seconds = String(value % 60).padStart(2, "0");
+		// 		timerDisplay.textContent = `倒计时: ${minutes}:${seconds}`;
+
+		// 		if (value <= 30) {
+		// 			timerDisplay.classList.add("low-time");
+		// 		} else {
+		// 			timerDisplay.classList.remove("low-time");
+		// 		}
+		// 	}
+		// };
+
+		// /**
+		//  * (由 websocket.js 调用) 更新游戏状态 UI
+		//  * @param {object} state - 游戏状态 payload
+		//  */
+		// App.updateGameUI = function (state) {
+		// 	const statusArea = document.getElementById("status-area");
+		// 	const canvas = App.fabricCanvas;
+
+		// 	// 1. 更新状态文本
+		// 	if (statusArea) {
+		// 		const phaseMap = {
+		// 			IDLE: "空闲",
+		// 			WAITING: "等待开始",
+		// 			DRAWING: "绘画中",
+		// 			REVEAL_WAITING: "等待揭晓",
+		// 		};
+		// 		const phaseText = phaseMap[state.phase] || state.phase;
+		// 		if (state.round === 0) {
+		// 			statusArea.textContent = `状态: 游戏未开始`;
+		// 		} else {
+		// 			statusArea.textContent = `状态: R${state.round} (T${state.try_num}) - ${phaseText}`;
+		// 		}
+		// 	}
+
+		// 	// 2. 启用/禁用画布和工具栏
+		// 	if (!canvas) {
+		// 		console.warn("[UI] Fabric canvas 尚未初始化");
+		// 		return;
+		// 	}
+
+		// 	if (state.phase === "DRAWING") {
+		// 		canvas.interactive = true;
+		// 		App.setToolbarEnabled(true);
+		// 		console.log("[UI] 画布和工具栏已启用");
+		// 	} else {
+		// 		// 在 IDLE, WAITING, REVEAL_WAITING 等所有其他阶段禁用
+		// 		canvas.interactive = false;
+		// 		App.setToolbarEnabled(false);
+		// 		console.log("[UI] 画布和工具栏已禁用");
+		// 	}
+		// };
+	};
+
+	/**
+	 * 启用或禁用整个工具栏
+	 * @param {boolean} enabled
+	 */
+	App.setToolbarEnabled = function (enabled) {
+		const toolbar = document.querySelector(".toolbar");
+		if (!toolbar) return;
+
+		if (enabled) {
+			toolbar.classList.remove("toolbar-disabled");
+		} else {
+			toolbar.classList.add("toolbar-disabled");
+		}
+	};
+
+	/**
+	 * (由 websocket.js 调用) 更新计时器 UI
+	 * @param {object} msg - { type: "timer", value: number, by: string }
+	 */
+	App.updateTimerUI = function (msg) {
+		const timerDisplay = document.getElementById("timer-display");
+		if (!timerDisplay) return;
+
+		const value = msg.value ?? "?";
+
+		if (msg.by === "reset") {
+			timerDisplay.textContent = `计时器已重置 (${value}s)`;
+			timerDisplay.classList.remove("low-time");
+		} else if (msg.by === "countdown") {
+			const minutes = String(Math.floor(value / 60)).padStart(2, "0");
+			const seconds = String(value % 60).padStart(2, "0");
+			timerDisplay.textContent = `倒计时: ${minutes}:${seconds}`;
+
+			if (value <= 30) {
+				timerDisplay.classList.add("low-time");
+			} else {
+				timerDisplay.classList.remove("low-time");
+			}
+		}
+	};
+
+	/**
+	 * (由 websocket.js 调用) 更新游戏状态 UI
+	 * @param {object} state - 游戏状态 payload
+	 */
+	App.updateGameUI = function (state) {
+		const infoRound = document.getElementById("game-info-round");
+		const infoTarget = document.getElementById("game-info-target");
+		const canvas = App.fabricCanvas;
+
+		// 1. 更新状态文本
+		if (infoRound && infoTarget) {
+			const phaseMap = {
+				IDLE: "空闲",
+				WAITING: "等待开始",
+				DRAWING: "绘画中",
+				REVEAL_WAITING: "等待揭晓",
+			};
+			const phaseText = phaseMap[state.phase] || state.phase;
+
+			if (state.round === 0) {
+				infoRound.textContent = `状态: 游戏未开始`;
+				infoTarget.textContent = `目标: ---`;
+			} else {
+				// 格式化文本
+				infoRound.textContent = `第${state.round}轮 (第${state.try_num}次尝试) - ${phaseText}`;
+				infoTarget.textContent = `目标: ${state.target_name || "???"}`;
+			}
+		}
+
+		// 2. 启用/禁用画布和工具栏
+		if (!canvas) {
+			console.warn("[UI] Fabric canvas 尚未初始化");
+			return;
+		}
+
+		// (--- 这是关键修复 ---)
+		if (state.phase === "DRAWING") {
+			canvas.interactive = true; // 允许对象交互
+			canvas.isDrawingMode = true; // 允许自由绘制
+			App.setToolbarEnabled(true);
+			console.log("[UI] 画布和工具栏已启用");
+		} else {
+			// 在 IDLE, WAITING, REVEAL_WAITING 等所有其他阶段禁用
+			canvas.interactive = false; // 禁用对象交互
+			canvas.isDrawingMode = false; // 禁用自由绘制
+			App.setToolbarEnabled(false);
+			console.log("[UI] 画布和工具栏已禁用");
 		}
 	};
 })(window.CanvasApp);

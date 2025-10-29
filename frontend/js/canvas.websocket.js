@@ -76,8 +76,14 @@
 	};
 
 	App.handleServerMessage = function (msg) {
-		// 仅作日志转发（保留原有处理口）
+		// 根据消息类型处理
 		switch (msg.type) {
+			case "timer":
+				App.updateTimerUI(msg);
+				break;
+			case "game_state_update":
+				App.updateGameUI(msg.payload);
+				break;
 			case "welcome":
 			case "broadcast_canvas":
 			case "game_state":

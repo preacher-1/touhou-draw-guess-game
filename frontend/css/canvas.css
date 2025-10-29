@@ -31,7 +31,7 @@ body {
 }
 
 .toolbar {
-	width: 280px;
+	width: 300px;
 	background: #fff;
 	border-right: 1px solid #e5e7eb;
 	padding: 12px;
@@ -42,6 +42,12 @@ body {
 	position: fixed;
 	left: 0;
 	overflow-y: auto;
+	transition: opacity 0.2s ease;
+}
+
+.toolbar.toolbar-disabled {
+	opacity: 0.6;
+	pointer-events: none;
 }
 
 .canvas-area {
@@ -55,16 +61,60 @@ body {
 	overflow: auto;
 }
 
+#game-info-container {
+	background: #f3f4f6;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 10px;
+}
+#game-info-display {
+	margin-bottom: 8px;
+}
+.info-line {
+	font-size: 18px;
+	color: #1f2937;
+	line-height: 1.5;
+}
+#game-info-round {
+	font-weight: 600;
+}
+#game-info-target {
+	font-weight: 800;
+	color: #eb2121;
+}
+
 canvas#main-canvas {
 	background: #fff;
 	border: 1px solid #e5e7eb;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-	max-width: calc(100vw - 300px);
-	max-height: calc(100vh - 60px);
 }
 
 .toolbar .group {
 	margin-bottom: 12px;
+}
+
+.toolbar .group.status {
+	margin-bottom: 4px;
+}
+
+/* (新代码：计时器样式) */
+.toolbar .group.timer {
+	margin-bottom: 0;
+}
+#timer-display {
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: #111827;
+	background: #f3f4f6;
+	padding: 10px;
+	border-radius: 8px;
+	text-align: center;
+	border: 1px solid #e5e7eb;
+}
+#timer-display.low-time {
+	color: #dc2626; /* 红色 */
+	background: #fee2e2;
+	border-color: #fca5a5;
 }
 
 .toolbar label {
@@ -75,7 +125,9 @@ canvas#main-canvas {
 }
 
 .button {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	padding: 8px 12px;
 	border-radius: 6px;
 	background: #111827;
@@ -192,18 +244,38 @@ input[type="range"] {
 
 /* ===== 颜色选择器 active 状态 ===== */
 .color-swatch {
-	width: 28px;
-	height: 28px;
+	width: 32px;
+	height: 32px;
 	border-radius: 6px;
 	border: 2px solid rgba(0, 0, 0, 0.06);
 	display: inline-block;
-	margin-right: 6px;
+	margin: 2px;
 	cursor: pointer;
 	box-sizing: border-box;
 }
 .color-swatch.active {
 	outline: 3px solid rgba(37, 99, 235, 0.14);
 	box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+}
+.custom-color-container {
+	display: flex;
+	align-items: center;
+	margin-top: 8px;
+	gap: 8px;
+}
+.custom-color-container label {
+	margin-bottom: 0; /* 覆盖默认的 margin-bottom */
+	font-size: 13px;
+	color: #374151;
+}
+input[type="color"] {
+	width: 32px;
+	height: 32px;
+	border: none;
+	padding: 0;
+	border-radius: 6px;
+	cursor: pointer;
+	background-color: transparent;
 }
 
 /* 橡皮按钮 active */

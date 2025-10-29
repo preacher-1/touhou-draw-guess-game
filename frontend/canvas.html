@@ -16,9 +16,18 @@
 		<div class="header">画布页面（Canvas）</div>
 		<div class="container">
 			<div class="toolbar">
-				<div class="group">
-					<label>轮次</label>
-					<input id="round-input" type="number" value="1" min="1" />
+				<div class="group" id="game-info-container">
+					<div id="game-info-display">
+						<div class="info-line" id="game-info-round">
+							状态: 游戏未开始
+						</div>
+						<div class="info-line" id="game-info-target">
+							目标: ---
+						</div>
+					</div>
+					<div class="timer" id="timer-display-container">
+						<div id="timer-display">等待计时器...</div>
+					</div>
 				</div>
 
 				<div class="group">
@@ -92,24 +101,25 @@
 							style="background-color: #a020f0"
 						></div>
 					</div>
-					<input id="brush-color" type="color" value="#000000" />
+					<div class="custom-color-container">
+						<input id="brush-color" type="color" value="#000000" />
+						<label for="brush-color">自定义</label>
+					</div>
 				</div>
 
 				<div class="group">
-					<button class="button" id="undo-btn">撤销</button>
-					<button class="button" id="redo-btn">重做</button>
+					<button class="button" id="undo-btn">⬅️ 撤销</button>
+					<button class="button" id="redo-btn">➡️ 重做</button>
 					<button class="button secondary" id="reset-btn">
-						重置
+						🗑️ 重置
 					</button>
 				</div>
 
 				<div class="group">
-					<button class="button" id="eraser-btn">橡皮</button>
-					<button class="button" id="fill-btn">油漆桶</button>
-					<button class="button" id="download-btn">保存</button>
+					<button class="button" id="eraser-btn">🧼 橡皮</button>
+					<button class="button" id="fill-btn">🩸 油漆桶</button>
+					<button class="button" id="download-btn">💾 保存</button>
 				</div>
-
-				<div class="group status" id="status-area">状态：未连接</div>
 
 				<div class="history-panel">
 					<h3>历史记录</h3>

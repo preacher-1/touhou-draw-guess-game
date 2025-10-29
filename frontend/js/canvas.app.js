@@ -30,6 +30,14 @@ window.CanvasApp = {
 	// ========= 模块占位符 (由其他文件填充) =========
 	config: {},
 	utils: {},
+
+	// 由 canvas.ui.js 填充
+	updateGameUI: function (state) {
+		console.warn("App.updateGameUI 未实现");
+	},
+	updateTimerUI: function (msg) {
+		console.warn("App.updateTimerUI 未实现");
+	},
 	// websocket 模块...
 	// history 模块...
 	// fabric 模块...
