@@ -35,7 +35,7 @@ class GameState:
     def next_round(self):
         """进入下一轮"""
         if self.round_num < TOTAL_ROUNDS:
-            self.round_num = 1
+            self.round_num += 1
             self.try_num = 1
             self.phase = "WAITING"
             self._update_target()
@@ -45,7 +45,7 @@ class GameState:
     def next_try(self):
         """进入下一次尝试"""
         if self.try_num < 2:
-            self.try_num = 1
+            self.try_num += 1
             self.phase = "WAITING"
             return True
         return False  # 两次机会已用完
