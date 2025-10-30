@@ -27,6 +27,9 @@ window.CanvasApp = {
 	// 上传防抖
 	uploadDebounceTimer: null,
 
+	// [新增] 游戏状态检测 (用于前端自动重置)
+	previousGameState: null,
+
 	// ========= 模块占位符 (由其他文件填充) =========
 	config: {},
 	utils: {},

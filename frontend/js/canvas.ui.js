@@ -73,6 +73,50 @@
 		// 注意：fabricCanvas.isDrawingMode 由 setFillMode 和 restoreBrushModeFromFill 控制
 	};
 
+	/**
+	 * @description [保留] 重置画布、工具和历史
+	 */
+	App.resetCanvasAndTools = function () {
+		// === 1. 重置画布 ===
+		if (!App.fabricCanvas) return;
+		App.fabricCanvas.clear();
+		App.fabricCanvas.backgroundColor = "#ffffff";
+		const json = App.fabricCanvas.toJSON();
+		App.historyStack = [
+			{ json: json, label: "初始画布", time: new Date() },
+		];
+		App.historyIndex = 0;
+		App.renderHistoryPanel();
+		App.triggerUpload("reset");
+		App.addHistoryLog("重置画布 (by system/button)");
+
+		// === 2. 重置工具 ===
+
+		// 2a. 定义默认值
+		const defaultColor = "#000000";
+		const defaultSize = 6;
+
+		// 2b. 重置颜色 (这将自动退出橡皮/油漆桶模式)
+		App.setBrushColor(defaultColor);
+
+		// 2c. 重置笔刷大小 (手动更新UI和 fabric 实例)
+		try {
+			const sizeRange = document.getElementById("brush-size");
+			const previewDot = document.getElementById("brush-preview-dot");
+
+			if (sizeRange) sizeRange.value = defaultSize;
+			if (previewDot) {
+				previewDot.style.width = `${defaultSize}px`;
+				previewDot.style.height = `${defaultSize}px`;
+			}
+			if (App.fabricCanvas.freeDrawingBrush) {
+				App.fabricCanvas.freeDrawingBrush.width = defaultSize;
+			}
+		} catch (e) {
+			console.error("[重置] 无法重置笔刷大小", e);
+		}
+	};
+
 	// ========= 初始化 Fabric.js ==========
 	App.initColorPickerAndTools = function () {
 		const swatches = document.querySelectorAll(".color-swatch");
@@ -107,46 +151,8 @@
 
 		if (resetBtn) {
 			resetBtn.addEventListener("click", function () {
-				// === 1. 重置画布 ===
-				App.fabricCanvas.clear();
-				App.fabricCanvas.backgroundColor = "#ffffff";
-				const json = App.fabricCanvas.toJSON();
-				App.historyStack = [
-					{ json: json, label: "初始画布", time: new Date() },
-				];
-				App.historyIndex = 0;
-				App.renderHistoryPanel();
-				App.triggerUpload("reset");
-				App.addHistoryLog("重置画布");
-
-				// === 2. 重置工具 ===
-
-				// 2a. 定义默认值
-				const defaultColor = "#000000";
-				const defaultSize = 6;
-
-				// 2b. 重置颜色 (这将自动退出橡皮/油漆桶模式)
-				App.setBrushColor(defaultColor);
-
-				// 2c. 重置笔刷大小 (手动更新UI和 fabric 实例)
-				try {
-					const sizeRange = document.getElementById("brush-size");
-					const previewDot =
-						document.getElementById("brush-preview-dot");
-
-					if (sizeRange) {
-						sizeRange.value = defaultSize;
-					}
-					if (previewDot) {
-						previewDot.style.width = `${defaultSize}px`;
-						previewDot.style.height = `${defaultSize}px`;
-					}
-					if (App.fabricCanvas && App.fabricCanvas.freeDrawingBrush) {
-						App.fabricCanvas.freeDrawingBrush.width = defaultSize;
-					}
-				} catch (e) {
-					console.error("[重置] 无法重置笔刷大小", e);
-				}
+				// [修改] 现在只调用新函数
+				App.resetCanvasAndTools();
 			});
 		}
 
@@ -341,6 +347,10 @@
 	 * @param {object} state - 游戏状态 payload
 	 */
 	App.updateGameUI = function (state) {
+		// [新增] 状态检测逻辑
+		const oldState = App.previousGameState;
+		App.previousGameState = state; // 存储当前状态供下次比较
+
 		const infoRound = document.getElementById("game-info-round");
 		const infoTarget = document.getElementById("game-info-target");
 		const canvas = App.fabricCanvas;
@@ -396,6 +406,18 @@
 			App.setToolbarEnabled(false);
 			console.log("[UI] 画布和工具栏已禁用");
 
+			// 自动重置画布:仅在前端检测状态变化
+			if (oldState) {
+				// 检查是否是从“非等待”状态进入“等待”状态
+				const isEnteringWaitPhase =
+					state.phase === "WAITING" && oldState.phase !== "WAITING";
+
+				// 检查是否是新一轮 (try_num == 1)
+				if (isEnteringWaitPhase && state.try_num === 1) {
+					console.log("[UI] 检测到新一轮开始，自动重置画布。");
+					App.resetCanvasAndTools();
+				}
+			}
 			canvas.defaultCursor = "default";
 			canvas.hoverCursor = "default";
 			canvas.renderAll(); // 重新渲染以应用更改并更新光标
