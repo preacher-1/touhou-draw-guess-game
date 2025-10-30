@@ -108,13 +108,13 @@ body {
 }
 
 .result-nameCN {
-	font-size: 1.5vw;
+	font-size: 1.2vw;
 	/* font-weight: bold; */
 }
 
 .result-nameEN,
 .result-similarity {
-	font-size: 1vw;
+	font-size: 0.8vw;
 }
 
 .result-nameEN {
