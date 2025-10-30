@@ -92,51 +92,52 @@
 		console.log("[油漆桶] 填充算法执行完毕。");
 	}
 
-	function expandFill(ctx, color, expand = 1) {
-		const w = ctx.canvas.width;
-		const h = ctx.canvas.height;
-		const img = ctx.getImageData(0, 0, w, h);
-		const data = img.data;
+	// function expandFill(ctx, color, expand = 1) {
+	// 	const w = ctx.canvas.width;
+	// 	const h = ctx.canvas.height;
+	// 	const img = ctx.getImageData(0, 0, w, h);
+	// 	const data = img.data;
 
-		// 1. 建立 mask：填充过的地方 α=255 且颜色等于目标色
-		const mask = new Uint8Array(w * h);
-		const [r, g, b] = color;
-		for (let i = 0; i < data.length; i += 4) {
-			const idx = i / 4;
-			if (
-				data[i] === r &&
-				data[i + 1] === g &&
-				data[i + 2] === b &&
-				data[i + 3] === 255
-			) {
-				mask[idx] = 1;
-			}
-		}
+	// 	// 1. 建立 mask：填充过的地方 α=255 且颜色等于目标色
+	// 	const mask = new Uint8Array(w * h);
+	// 	const [r, g, b] = color;
+	// 	for (let i = 0; i < data.length; i += 4) {
+	// 		const idx = i / 4;
+	// 		if (
+	// 			data[i] === r &&
+	// 			data[i + 1] === g &&
+	// 			data[i + 2] === b &&
+	// 			data[i + 3] === 255
+	// 		) {
+	// 			mask[idx] = 1;
+	// 		}
+	// 	}
 
-		// 2. 扩张 mask 1 px（四连通）
-		const tmp = new Uint8Array(mask);
-		for (let y = 1; y < h - 1; y++) {
-			for (let x = 1; x < w - 1; x++) {
-				const i = y * w + x;
-				if (tmp[i]) continue;
-				// 上下左右有填充则扩张
-				if (tmp[i - 1] || tmp[i + 1] || tmp[i - w] || tmp[i + w]) {
-					mask[i] = 1;
-				}
-			}
-		}
+	// 	// 2. 扩张 mask 1 px（四连通）
+	// 	const tmp = new Uint8Array(mask);
+	// 	for (let y = 1; y < h - 1; y++) {
+	// 		for (let x = 1; x < w - 1; x++) {
+	// 			const i = y * w + x;
+	// 			if (tmp[i]) continue;
+	// 			// 上下左右有填充则扩张
+	// 			if (tmp[i - 1] || tmp[i + 1] || tmp[i - w] || tmp[i + w]) {
+	// 				mask[i] = 1;
+	// 			}
+	// 		}
+	// 	}
 
-		// 3. 把扩张后的 mask 刷成目标色
-		for (let i = 0; i < mask.length; i++) {
-			if (mask[i]) {
-				data[i * 4] = r;
-				data[i * 4 + 1] = g;
-				data[i * 4 + 2] = b;
-				data[i * 4 + 3] = 255;
-			}
-		}
-		ctx.putImageData(img, 0, 0);
-	}
+	// 	// 3. 把扩张后的 mask 刷成目标色
+	// 	for (let i = 0; i < mask.length; i++) {
+	// 		if (mask[i]) {
+	// 			data[i * 4] = r;
+	// 			data[i * 4 + 1] = g;
+	// 			data[i * 4 + 2] = b;
+	// 			data[i * 4 + 3] = 255;
+	// 		}
+	// 	}
+	// 	ctx.putImageData(img, 0, 0);
+	// }
+
 
 	// ========= 颜色 / 橡皮 / 油漆桶 管理 ==========
 	// setBrushColor：设置画笔颜色，并确保退出橡皮/油漆桶模式
@@ -357,7 +358,7 @@
 					}
 					// (步骤 4: 在临时画布上执行泛洪填充)
 					floodFill(tempCtx, x, y, colorToFill);
-					expandFill(tempCtx, colorToFill, 1); // 扩展填充
+					// expandFill(tempCtx, colorToFill, 1); // 扩展填充
 				} catch (e) {
 					console.error("[油漆桶] 步骤 4: 泛洪填充算法失败", e);
 					return;
