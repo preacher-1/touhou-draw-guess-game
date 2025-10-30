@@ -56,9 +56,10 @@ body {
 	justify-content: center;
 	align-items: center;
 	background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-	margin-left: 280px;
+	margin-left: 300px;
 	height: 100%;
 	overflow: auto;
+	position: relative;
 }
 
 #game-info-container {
@@ -283,4 +284,20 @@ input[type="color"] {
 .button#fill-btn.active {
 	background: #ef4444;
 	color: #fff;
+}
+
+/* [新增] 画布区域内的保存按钮样式 */
+.canvas-area #download-btn {
+	position: absolute;
+	top: 12px;
+	right: 20px;
+	z-index: 20; /* 确保在画布之上 */
+	background-color: #10b981; /* 绿色 */
+	color: white;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.canvas-area #download-btn:hover {
+	background-color: #059669;
+	opacity: 1; /* 覆盖 .button:hover */
 }

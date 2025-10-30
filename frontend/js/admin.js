@@ -14,6 +14,7 @@
 	const nextTryBtn = document.getElementById("next-try-btn"); // 第二次尝试
 	const revealBtn = document.getElementById("reveal-results-btn"); // 显示结果
 	const top5List = document.getElementById("top5-list"); // Top 5 列表
+	const manualSaveBtn = document.getElementById("manual-save-btn"); // 手动保存
 
 	// 按钮状态设置辅助函数，注意变量值为disabled
 	function setAllButtons(disabled) {
@@ -22,6 +23,7 @@
 		nextRoundBtn.disabled = disabled;
 		revealBtn.disabled = disabled;
 		nextTryBtn.disabled = disabled;
+		manualSaveBtn.disabled = disabled;
 	}
 	setAllButtons(true); // 默认禁用，等待 WS 同步
 
@@ -166,7 +168,7 @@
 			setAllButtons(true);
 			nextRoundBtn.disabled = false;
 		}
-		// WAITING 状态：允许开始、重置、下一轮
+		// WAITING 状态：允许开始、重置、下一轮、手动保存
 		else if (state.phase === "WAITING") {
 			setAllButtons(false);
 			revealBtn.disabled = true; // WAITING 时不能揭晓
@@ -177,12 +179,14 @@
 		else if (state.phase === "DRAWING") {
 			setAllButtons(true);
 			resetBtn.disabled = false;
+			manualSaveBtn.disabled = false; // 新增：可以手动保存
 		}
-		// REVEAL_WAITING 状态：允许揭晓、下一轮、第 2 次尝试
+		// REVEAL_WAITING 状态：允许揭晓、下一轮、第 2 次尝试、手动保存
 		else if (state.phase === "REVEAL_WAITING") {
 			setAllButtons(true);
 			nextRoundBtn.disabled = false;
 			revealBtn.disabled = false;
+			manualSaveBtn.disabled = false;
 
 			// “第 2 次尝试”要特判
 			if (state.try_num === 1) {
@@ -271,6 +275,24 @@
 				action: "START_NEXT_TRY", // (新 action)
 			},
 		});
+	});
+
+	manualSaveBtn.addEventListener("click", () => {
+		// [新增] 手动保存事件
+		if (
+			confirm(
+				"确定要手动保存当前服务器上的画布吗？\n（这不会影响游戏流程）"
+			)
+		) {
+			console.log("➡️ [AdminWS] 发送: 手动保存画布");
+			sendMessage({
+				type: "command",
+				payload: {
+					action: "SAVE_CANVAS_MANUAL",
+				},
+			});
+			alert("保存请求已发送！");
+		}
 	});
 
 	revealBtn.addEventListener("click", () => {

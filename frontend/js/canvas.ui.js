@@ -375,14 +375,30 @@
 		if (state.phase === "DRAWING") {
 			canvas.interactive = true; // 允许对象交互
 			canvas.isDrawingMode = true; // 允许自由绘制
+
+			// 确保对象可交互
+			canvas.forEachObject(function (o) {
+				o.selectable = true;
+				o.evented = true;
+			});
 			App.setToolbarEnabled(true);
 			console.log("[UI] 画布和工具栏已启用");
 		} else {
 			// 在 IDLE, WAITING, REVEAL_WAITING 等所有其他阶段禁用
 			canvas.interactive = false; // 禁用对象交互
 			canvas.isDrawingMode = false; // 禁用自由绘制
+
+			canvas.discardActiveObject(); // 取消当前可能选中的对象
+			canvas.forEachObject(function (o) {
+				o.selectable = false; // 禁止选中
+				o.evented = false; // 禁止触发事件 (更彻底)
+			});
 			App.setToolbarEnabled(false);
 			console.log("[UI] 画布和工具栏已禁用");
+
+			canvas.defaultCursor = "default";
+			canvas.hoverCursor = "default";
+			canvas.renderAll(); // 重新渲染以应用更改并更新光标
 		}
 	};
 })(window.CanvasApp);

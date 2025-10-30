@@ -4,6 +4,7 @@ import logging
 
 from app.utils.fix_job_time import fix_job_time
 from app.core.config import TIMER_MAX_VALUE
+from app.utils.save_image import save_canvas_to_history
 
 
 log = logging.getLogger("uvicorn")
@@ -34,7 +35,7 @@ class GameState:
     def next_round(self):
         """进入下一轮"""
         if self.round_num < TOTAL_ROUNDS:
-            self.round_num += 1
+            self.round_num = 1
             self.try_num = 1
             self.phase = "WAITING"
             self._update_target()
@@ -44,7 +45,7 @@ class GameState:
     def next_try(self):
         """进入下一次尝试"""
         if self.try_num < 2:
-            self.try_num += 1
+            self.try_num = 1
             self.phase = "WAITING"
             return True
         return False  # 两次机会已用完
@@ -131,6 +132,16 @@ async def game_timer_task():
                 )
         else:
             log.info("计时器自然结束")
+
+            try:
+                loop = asyncio.get_running_loop()
+                # 在 executor 中运行同步的 IO 操作，避免阻塞
+                await loop.run_in_executor(
+                    None, save_canvas_to_history, game_state, "auto"
+                )
+            except Exception as e:
+                log.error(f"自动保存图像失败: {e}")
+
             game_state.set_phase("REVEAL_WAITING")  # 切换到“等待揭晓”
             await broadcast_game_state()
             # 计时器结束后，重置 game_state 值
@@ -239,6 +250,22 @@ async def dispatch(command: dict):
             )
         else:
             log.warning(f"在 {game_state.phase} 阶段收到 REVEAL_RESULTS，已忽略")
+
+    elif action == "SAVE_CANVAS_MANUAL":
+        log.info("处理命令: SAVE_CANVAS_MANUAL")
+        try:
+            loop = asyncio.get_running_loop()
+            # 在 executor 中运行同步 IO，避免阻塞 WebSocket
+            file_path = await loop.run_in_executor(
+                None, save_canvas_to_history, game_state, "manual"
+            )
+            if file_path:
+                log.info(f"手动保存成功: {file_path}")
+                # (未来可以考虑向管理员发回一个确认通知)
+            else:
+                log.warning("手动保存失败 (函数返回 None)")
+        except Exception as e:
+            log.error(f"手动保存命令执行失败: {e}")
 
     else:
         log.warning(f"收到未知的 action: {action}")
