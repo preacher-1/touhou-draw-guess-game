@@ -430,7 +430,27 @@ function updateTop5(results, forceShow = false) {
 		if (NameEN) NameEN.innerText = formatName(item.label); // 设置英文名，通过formatName函数把下划线转空格，并首字母大写
 		if (Similarity)
 			Similarity.innerText = `${(item.score * 100).toFixed(1)}%`; // 设置相似度，保留一位小数并添加百分号
-		if (image) image.src = `../images/chr/${item.label}_small.png`; // 设置图片路径
+		
+		if (image) {
+			const targetSrc = `../images/chr/${item.label}_small.png`;
+			const fallbackSrc = `../images/chr/satsuki_rin_unknown.png`;
+
+			// 建立临时 Image 对象检测缓存
+			const testImg = new Image();
+			testImg.src = targetSrc;
+
+			if (testImg.complete && testImg.naturalWidth !== 0) {
+				// 已缓存，直接显示目标图片
+				image.src = targetSrc;
+			} else {
+				// 未缓存，先显示占位图，再加载
+				// 防止图片耗时加载时显示错误图标
+				image.src = fallbackSrc;
+				testImg.onload = () => {
+					image.src = targetSrc;
+				};
+			}
+		}
 	});
 }
 

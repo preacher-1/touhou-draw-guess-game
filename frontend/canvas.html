@@ -4,6 +4,11 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<title>画布 - Touhou Draw & Guess</title>
+		<script src="https://cdn.jsdelivr.net/npm/vanilla-picker@2.12.1/dist/vanilla-picker.min.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/vanilla-picker@2.12.1/dist/vanilla-picker.min.css"
+		/>
 		<link rel="stylesheet" href="/static/css/canvas.css" />
 		<!-- fabric.js from CDN -->
 		<script
@@ -107,8 +112,9 @@
 						></div>
 					</div>
 					<div class="custom-color-container">
-						<input id="brush-color" type="color" value="#000000" />
-						<label for="brush-color">自定义</label>
+						<button id="custom-color-btn" class="button">
+							🎨 自定义颜色
+						</button>
 					</div>
 				</div>
 

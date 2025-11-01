@@ -423,4 +423,26 @@
 			canvas.renderAll(); // 重新渲染以应用更改并更新光标
 		}
 	};
+
+	document.addEventListener("DOMContentLoaded", () => {
+		const customColorBtn = document.getElementById("custom-color-btn");
+		const brushPreviewDot = document.getElementById("brush-preview-dot");
+		const colorInput = document.getElementById("brush-color"); // 保留隐藏输入，兼容旧逻辑
+
+		const picker = new Picker({
+			parent: customColorBtn,
+			popup: "bottom",
+			color: "#000000",
+			onChange: (color) => {
+				const hex = color.hex; // 获取 hex 值（如 #ff0000）
+				if (colorInput) colorInput.value = hex; // 同步隐藏输入
+				App.setBrushColor(hex); // ✅ 关键：触发画布颜色更新
+				if (brushPreviewDot) {
+					brushPreviewDot.style.backgroundColor = hex; // 更新预览点
+				}
+			},
+		});
+
+		// 可选：点击按钮时打开选择器（picker 已自动处理）
+	});
 })(window.CanvasApp);

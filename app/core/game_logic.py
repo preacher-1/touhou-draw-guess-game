@@ -11,9 +11,15 @@ log = logging.getLogger("uvicorn")
 
 
 GAME_ROUNDS_DATA = [
-    {"label": "hakurei_reimu", "name": "博丽灵梦"},
+    {"label": "shameimaru_aya", "name": "射命丸文"},
+    {"label": "sekibanki", "name": "赤蛮奇"},
     {"label": "kirisame_marisa", "name": "雾雨魔理沙"},
-    {"label": "izayoi_sakuya", "name": "十六夜咲夜"},
+    {"label": "kamishirasawa_keine", "name": "上白泽慧音"},
+    {"label": "usami_renko", "name": "宇佐见莲子"},
+    {"label": "cirno", "name": "琪露诺"},
+    {"label": "matara_okina", "name": "摩多罗隐岐奈"},
+    {"label": "reiuji_utsuho", "name": "灵乌路空"},
+    {"label": "hakurei_reimu", "name": "博丽灵梦"},
 ]
 TOTAL_ROUNDS = len(GAME_ROUNDS_DATA)
 
